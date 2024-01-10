@@ -1,12 +1,15 @@
 const mysql = require("mysql");
+const dotenv = require('dotenv');
+
+dotenv.config();
+
 const connection = mysql.createPool({
-  host: "yottol-rds.copzpeo4bk3d.ap-south-1.rds.amazonaws.com",
-  user: "root",
-  password: "BxCdkbmW8gVG1Cj5jpA0",
-  database: "swiftfoliosuk",
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_DATABASE,
   multipleStatements: true,
 });
-
 
 const connectDB = async () => {
   connection.getConnection((err, connection) => {
