@@ -8,6 +8,7 @@ const { CustomerValidatePin } = require("../services/CustomerValidatePin");
 const { LoginOTPEmail } = require("../../../utils/Templetes/LoginOtpEmail");
 
 
+
 const CustomerLoginEmailValidationController = async (req, res, next) => {
     const { email_id } = req.query;
     console.log(req.query)
