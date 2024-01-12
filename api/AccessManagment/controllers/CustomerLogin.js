@@ -27,7 +27,7 @@ const CustomerLoginEmailValidationController = async (req, res, next) => {
         }
     } catch (error) {
         console.log(error);
-        return res.json({ error: true, message: error });
+        return res.status(500).json({ error: true, message: error });
     }
 }
 
@@ -48,7 +48,7 @@ const CustomerGenerateOtpController = async (req, res, next) => {
         return res.json({ error: false, message: 'Otp Generated' });
     } catch (error) {
         console.log(error);
-        return res.json({ error: true, message: error });
+        return res.status(500).json({ error: true, message: error });
     }
 }
 
@@ -70,7 +70,7 @@ const CustomerValidateOtpController = async (req, res, next) => {
 
     } catch (error) {
         console.log(error);
-        return res.json({ error: true, message: error });
+        return res.status(500).json({ error: true, message: error });
     }
 }
 
@@ -93,7 +93,7 @@ const CustomerValidatePinController = async (req, res, next) => {
 
     } catch (error) {
         console.log(error);
-        return res.json({ error: true, message: error });
+        return res.status(500).json({ error: true, message: error });
     }
 }
 
@@ -112,7 +112,7 @@ const CustomerResetPinController = async (req, res, next) => {
         return res.json({ error: false, message: 'Pin Reset' });
     } catch (error) {
         console.log(error);
-        return res.json({ error: true, message: error });
+        return res.status(500).json({ error: true, message: error });
     }
 }
 
