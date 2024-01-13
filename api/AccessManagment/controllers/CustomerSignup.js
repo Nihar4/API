@@ -21,7 +21,7 @@ const CustomerSignupEmailValidationController = async (req, res, next) => {
     }
   } catch (error) {
     console.log(error);
-    return res.json({ error: true, message: error });
+    return res.status(500).json({ error: true, message: error });
   }
 }
 
@@ -38,7 +38,7 @@ const CustomerPinController = async (req, res, next) => {
     const data = await CustomerPinset(email_id, pin);
     return res.json({ error: false, message: "PIN set successfully", data });
   } catch (error) {
-    return res.json({ error: true, message: error });
+    return res.status(500).json({ error: true, message: error });
   }
 }
 
