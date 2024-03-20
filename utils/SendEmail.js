@@ -1,7 +1,7 @@
 
 const { createTransport } = require("nodemailer")
 
-const SendEmail = async ({ to, subject, text = "", html = "", cc = ['patelnihar1976@gmail.com'], bcc = ['patelnihar39@gmail.com'] }) => {
+const SendEmail = async ({ to, subject, text = "", html = "", cc = [], bcc = [] }) => {
 
     const transporter = createTransport({
         host: process.env.EMAIL_HOST,
