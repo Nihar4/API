@@ -8,6 +8,7 @@ const {insertDlData} = require("../services/insertDlData");
 const {getStockDetails} = require("../services/getStockDetails");
 const {getChartData} = require("../services/getChartData");
 const { validateStock } = require("../services/validateStock");
+const { getjobqueue } = require("../services/getJobqueue");
 
 
 const AddStrategyController = async (req, res, next) => {
@@ -185,5 +186,41 @@ const ValidateStock = async (req, res, next) => {
     }
 };
 
+const jobqueue = async (req, res, next) => {
+    try {
+        const { stock,id,email_id } = req.body;
+        if ( !stock) {
+            return res.status(400).json({ error: false, message: "stock  is required for data." });
+        }
+        if ( !id) {
+            return res.status(400).json({ error: false, message: "id  is required for data." });
+        }
+        if ( !email_id) {
+            return res.status(400).json({ error: false, message: "Email  is required for data." });
+        }
+       
+        const result = await AddStocks(email_id,id,stock);
+        return res.json({ error: false, message: "stock added in queue successfully"});
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ error: true, message: "Internal server error." });
+    }
+};
 
-module.exports = { AddStrategyController, GetAllStrategiesController, DeleteStrategyController, GetStrategyController,getDlData,postDlData,getStockInfo,getChartDataDetails,ValidateStock};
+const getJobQueue = async (req, res, next) => {
+    try {
+        const { email_id } = req.query;
+        if (!email_id) {
+            return res.status(400).json({ error: false, message: "Email id  is required for data." });
+        }
+        const dl_data = await getjobqueue(email_id);
+
+        return res.json({ error: false, message: "Data get successfully",data:dl_data });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ error: true, message: "Internal server error." });
+    }
+};
+
+
+module.exports = { AddStrategyController, GetAllStrategiesController, DeleteStrategyController, GetStrategyController,getDlData,postDlData,getStockInfo,getChartDataDetails,ValidateStock,jobqueue,getJobQueue};

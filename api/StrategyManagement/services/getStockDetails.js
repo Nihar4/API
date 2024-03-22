@@ -3,7 +3,8 @@ const yahooFinance = require("yahoo-finance2").default;
 
 const getStockDetails = async (stock) => {
   return new Promise(async (resolve, reject) => {
-    const stockName = stock.replace(".L", "");
+    // console.log(stock);
+    // const stockName = stock.replace(".L", "");
     // console.log(stockName);
 
     let currentDate = new Date();
@@ -20,9 +21,10 @@ const getStockDetails = async (stock) => {
     // console.log(latestData);
     // console.log(lastMonthData);
 
-    const query = `SELECT code, name FROM security_list WHERE code = '${stockName}'`;
-    const result = await ExecuteQuery(query);
-    const detailed_name = result[0].name;
+    // const query = `SELECT code, name FROM security_list WHERE code = '${stock}'`;
+    // const result = await ExecuteQuery(query);
+    const result = await yahooFinance.quote(`${stock}`);
+    const detailed_name = result.longName ? result.longName : result.shortName;
     
     const percentage_change = (latestData/lastMonthData -1)*100;
     

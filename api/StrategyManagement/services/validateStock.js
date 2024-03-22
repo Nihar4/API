@@ -6,7 +6,7 @@ const validateStock = async (stock) => {
 
         let calculatedStartDate = new Date(1970, 0, 1);
         calculatedStartDate = calculatedStartDate.getTime() / 1000;
-        let symbolToPass = stock + ".L";
+        let symbolToPass = stock ;
         const finalEndDate = new Date().getTime() / 1000;
 
         const historicalData = await yahooFinance.historical(symbolToPass, {
