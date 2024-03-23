@@ -38,7 +38,7 @@ const getChartData = async (stock, range, id) => {
 
     const finalStartDate = calculatedStartDate;
     const finalEndDate = new Date().getTime() / 1000;
-    let symbolToPass = stock + ".L";
+    let symbolToPass = stock;
     let interval = "1d";
     if (range === "5Y" || range === "MAX") {
       interval = "1wk";
@@ -95,8 +95,8 @@ const getChartData = async (stock, range, id) => {
 
       const dataChunks = [];
 
-      for (let i = 0; i < outputDataArray.length; i += 110) {
-        dataChunks.push(outputDataArray.slice(i, i + 110));
+      for (let i = 0; i < outputDataArray.length; i += 66) {
+        dataChunks.push(outputDataArray.slice(i, i + 66));
       }
 
       // let  dataWithDates = outputDataArray.map((closeValue, index) => {
