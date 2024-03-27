@@ -91,7 +91,7 @@ const getChartData = async (stock, range, id) => {
       const startDate = new Date();
       startDate.setDate(startDate.getDate() + 1);
       const outputDataArray = latestOutputData.split(",");
-      console.log(outputDataArray.length);
+      // console.log(outputDataArray.length);
 
       const dataChunks = [];
 
