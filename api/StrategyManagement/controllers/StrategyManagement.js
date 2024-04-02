@@ -9,6 +9,7 @@ const {getStockDetails} = require("../services/getStockDetails");
 const {getChartData} = require("../services/getChartData");
 const { validateStock } = require("../services/validateStock");
 const { getjobqueue } = require("../services/getJobqueue");
+const { getLongName } = require("../services/getLongName");
 
 
 const AddStrategyController = async (req, res, next) => {
@@ -222,5 +223,19 @@ const getJobQueue = async (req, res, next) => {
     }
 };
 
+const getlongname = async (req, res, next) => {
+    try {
+        const {stock}= req.query;
+        if (!stock) {
+            return res.status(400).json({ error: false, message: "sock id  is required for data." });
+        }
+        const data = await getLongName(stock);
 
-module.exports = { AddStrategyController, GetAllStrategiesController, DeleteStrategyController, GetStrategyController,getDlData,postDlData,getStockInfo,getChartDataDetails,ValidateStock,jobqueue,getJobQueue};
+        return res.json({ error: false, message: "Data get successfully",data:data });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ error: true, message: "Internal server error." });
+    }
+};
+
+module.exports = { AddStrategyController, GetAllStrategiesController, DeleteStrategyController, GetStrategyController,getDlData,postDlData,getStockInfo,getChartDataDetails,ValidateStock,jobqueue,getJobQueue,getlongname};

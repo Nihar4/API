@@ -39,9 +39,15 @@ const getStockDetails = async (stock) => {
         1
       );
 
-      let lastMonthDate = new Date(
+      let curr  = new Date(
         currentDate.getFullYear(),
-        currentDate.getMonth(),
+        currentDate.getMonth() - 1,
+        1
+      );
+
+      let lastMonthDate = new Date(
+        curr.getFullYear(),
+        curr.getMonth(),
         1
       )
         .toISOString()
