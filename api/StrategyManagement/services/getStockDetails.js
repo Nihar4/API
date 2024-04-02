@@ -35,7 +35,7 @@ const getStockDetails = async (stock) => {
       let currentDate = new Date();
       let calculatedStartDate = new Date(
         currentDate.getFullYear(),
-        currentDate.getMonth() - 1,
+        currentDate.getMonth() - 2,
         1
       );
 
@@ -54,6 +54,8 @@ const getStockDetails = async (stock) => {
         `${stock}`,
         queryOptions
       );
+
+      // console.log(stockDetails);
       const latestData = stockDetails[stockDetails.length - 1].adjClose;
       // console.log(latestData, stockDetails[stockDetails.length-1].date);
       let lastMonthData;
@@ -76,6 +78,7 @@ const getStockDetails = async (stock) => {
               l.toISOString().split("T")[0]
           );
           if (foundData) {
+            // console.log(foundData);
             lastMonthData = foundData.adjClose;
             break;
           }
