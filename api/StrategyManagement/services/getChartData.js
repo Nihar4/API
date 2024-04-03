@@ -98,7 +98,7 @@ const getChartData = async (stock, range, id) => {
         }
         else if(range == "5Y"){
           const fiveYearAgo = new Date();
-          fiveYearAgo.setFullYear(fiveYearAgo.getFullYear() - 1);
+          fiveYearAgo.setFullYear(fiveYearAgo.getFullYear() - 5);
 
           const filteredData = candlesWithAdditionalData.filter(
             (candle) => new Date(candle.date) >= fiveYearAgo
