@@ -5,7 +5,7 @@ const getstockprice = require("./getstockprice")
 const getstockdetails = require("./getstockdetails")
 const getsearchlive = require("./getsearchlive")
 const gethistoricaldata = require("./gethistoricaldata")
-const getsearchliveEureka = require("./getSearchLiveEureka")
+const getsearchliveEureka = require("./getsearchliveEureka")
 
 
 AccessManagment.post("/signup/email-validation", CustomerSignupEmailValidationController)
