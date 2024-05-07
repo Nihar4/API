@@ -4,11 +4,11 @@ const yahooFinance = require("yahoo-finance2").default;
 const getChartData = async (stock, range, id) => {
   return new Promise(async (resolve, reject) => {
     if (stock == stock.split(".")[0]) {
-      const query = `SELECT column_name FROM information_schema.columns WHERE table_name = 'master_benchmarks_price' AND column_name LIKE '%${stock}'`;
+      const query = `SELECT column_name FROM information_schema.columns WHERE table_name = 'master_benchmarks_price' AND column_name LIKE '%${encodeURIComponent(stock)}'`;
       const result = await ExecuteQuery(query);
 
       const columnName = result[0].column_name;
-      const data_query = `SELECT Month_Year, ${columnName} FROM master_benchmarks_price WHERE ${columnName} IS NOT NULL`;
+      const data_query = `SELECT Month_Year, \`${columnName}\` FROM master_benchmarks_price WHERE \`${columnName}\` IS NOT NULL`;
 
       const data_result = await ExecuteQuery(data_query);
       // console.log(data_result);
@@ -30,6 +30,7 @@ const getChartData = async (stock, range, id) => {
 
       try {
         const query = `SELECT * FROM swiftfoliosuk.dl_jobs WHERE \`strategy_id\`=${id} AND \`security\`= '${stock}'`;
+        // console.log(query);
         const result = await ExecuteQuery(query);
 
         result.sort(
@@ -37,11 +38,11 @@ const getChartData = async (stock, range, id) => {
         );
 
         const latestOutputData = result[0].output_data;
-
+        
         const lastDate = new Date(
           candlesWithoutAdjClose[candlesWithoutAdjClose.length - 1].date
         );
-
+        
         const startDate = new Date(
           lastDate.getFullYear(),
           lastDate.getMonth() + 1,
@@ -49,19 +50,21 @@ const getChartData = async (stock, range, id) => {
         );
         startDate.setHours(startDate.getHours() + 5);
         startDate.setMinutes(startDate.getMinutes() + 30);
-
+        
         //  console.log(startDate);
         const outputDataArray = latestOutputData.split(",");
+        console.log(stock , outputDataArray.length);
 
         const dataChunks = [];
 
-        for (let i = 0; i < outputDataArray.length; i += 3) {
-          dataChunks.push(outputDataArray.slice(i, i + 3));
+        for (let i = 0; i < outputDataArray.length; i += 12) {
+          dataChunks.push(outputDataArray.slice(i, i + 12));
         }
 
         let dataWithDates = [];
 
         let len = dataChunks[0].length;
+        // console.log(len);
         const currentDate = new Date(startDate);
         for (let i = 0; i < len; i++) {
           dataWithDates.push({
@@ -86,13 +89,13 @@ const getChartData = async (stock, range, id) => {
         // console.log(candlesWithAdditionalData);
         let filteredData;
 
-        if (range == "1Y") {
-          const oneYearAgo = new Date();
-          oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-          // oneYearAgo.setDate(0);
+        if (range == "3Y") {
+          const threeYearAgo = new Date();
+          threeYearAgo.setFullYear(threeYearAgo.getFullYear() - 3);
+          // threeYearAgo.setDate(0);
 
           const filteredData = candlesWithAdditionalData.filter(
-            (candle) => new Date(candle.date) >= oneYearAgo
+            (candle) => new Date(candle.date) >= threeYearAgo
           );
           resolve(filteredData);
         }

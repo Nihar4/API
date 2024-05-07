@@ -1,3 +1,4 @@
+const { AddStrategyController_Eureka, GetAllStrategiesController_Eureka, DeleteStrategyController_Eureka, GetStrategyController_Eureka, InsertDlDataEureka } = require("./controllers/EurekaStrategyManagement");
 const { AddStrategyController, GetAllStrategiesController, DeleteStrategyController, GetStrategyController,getDlData,postDlData ,getStockInfo,getChartDataDetails,ValidateStock, jobqueue, getJobQueue, getlongname} = require("./controllers/StrategyManagement");
 
 const StrategyManagement = require("express").Router()
@@ -16,6 +17,18 @@ StrategyManagement.get("/validatestock", ValidateStock)
 StrategyManagement.get("/getjobqueue", getJobQueue)
 StrategyManagement.get("/getlongname", getlongname)
 StrategyManagement.post("/jobqueue", jobqueue)
+
+
+
+StrategyManagement.post("/insertEureka",AddStrategyController_Eureka)
+StrategyManagement.get("/getEureka", GetAllStrategiesController_Eureka)
+StrategyManagement.delete("/eureka", DeleteStrategyController_Eureka)
+StrategyManagement.get("/getoneEureka", GetStrategyController_Eureka)
+
+// StrategyManagement.post("/insertdldataEureka",InsertDlDataEureka)
+
+
+
 
 
 

@@ -227,7 +227,7 @@ const getlongname = async (req, res, next) => {
     try {
         const {stock}= req.query;
         if (!stock) {
-            return res.status(400).json({ error: false, message: "sock id  is required for data." });
+            return res.status(400).json({ error: false, message: "stock id  is required for data." });
         }
         const data = await getLongName(stock);
 
