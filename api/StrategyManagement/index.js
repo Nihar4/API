@@ -25,7 +25,7 @@ StrategyManagement.get("/getEureka", GetAllStrategiesController_Eureka)
 StrategyManagement.delete("/eureka", DeleteStrategyController_Eureka)
 StrategyManagement.get("/getoneEureka", GetStrategyController_Eureka)
 
-// StrategyManagement.post("/insertdldataEureka",InsertDlDataEureka)
+StrategyManagement.post("/insertdldataEureka",InsertDlDataEureka)
 
 
 
