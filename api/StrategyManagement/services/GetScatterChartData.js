@@ -9,7 +9,7 @@ var cov = require("compute-covariance");
 var PortfolioAllocation = require("portfolio-allocation");
 
 const getData = async (id) => {
-  const query = `SELECT stock FROM strategy_Eureka WHERE id = ${id}`;
+  const query = `SELECT stock FROM strategy WHERE id = ${id}`;
   const data = await ExecuteQuery(query);
   // console.log(data.length);
 
@@ -23,19 +23,19 @@ const getData = async (id) => {
     stock_array.push(stock_no);
     // console.log(stock_no);
 
-    const query = `SELECT column_name FROM information_schema.columns WHERE table_name = 'master_benchmarks_price' AND column_name LIKE '%${encodeURIComponent(
-      stock_no
-    )}'`;
-    const result = await ExecuteQuery(query);
+    const queryOptions = { period1: "1970-01-01" /* ... */ };
 
-    const columnName = result[0].column_name;
-    // console.log(columnName);
+    let stockDetails = await yahooFinance.historical(`${stock_no}`, queryOptions);
+    // console.log(stockDetails);
 
-    const data_query = `SELECT  \`${columnName}\` FROM master_benchmarks_price WHERE \`${columnName}\` IS NOT NULL`;
-    const data_result = await ExecuteQuery(data_query);
+    const adjCloseArray = stockDetails.map(
+      (stockDetail) => stockDetail.adjClose
+    );
+
+    
     const value_array = [];
-    for (const value of data_result) {
-      value_array.push(parseFloat(value[columnName]));
+    for (const value of adjCloseArray) {
+      value_array.push(parseFloat(value));
     }
     temp_data_array.push(value_array);
 
@@ -79,10 +79,11 @@ const getData = async (id) => {
   };
 };
 
-const InsertdldataEureka = async (id, data) => {
+const GetScatterChartData = async (id, data) => {
   return new Promise(async (resolve, reject) => {
     try {
       const stock_data = await getData(id);
+
 
       const normalize_data = [];
       const stock_array = stock_data.stock_array;
@@ -97,17 +98,21 @@ const InsertdldataEureka = async (id, data) => {
 
         normalize_data.push(temp_array);
       }
-
+      // console.log(data,stock_array);
       const mat = cov(stock_data.percentage_change_array);
 
       min_weight = [];
       max_weight = [];
 
       for (const value of stock_array) {
-        min_weight.push(parseFloat(data[value][0]));
-        max_weight.push(parseFloat(data[value][1]));
+        // console.log(value,data[value][0]);
+        if(data[value] ){
+
+          min_weight.push(parseFloat(data[value][0]));
+          max_weight.push(parseFloat(data[value][1]));
+        }
       }
-      // console.log(min_weight,max_weight);
+      // console.log( stock_data.predicted_change_array);
 
       // const x = PortfolioAllocation.meanVarianceEfficientFrontierPortfolios(stock_data.predicted_change_array,mat);
       const x = PortfolioAllocation.meanVarianceEfficientFrontierPortfolios(
@@ -143,4 +148,4 @@ const InsertdldataEureka = async (id, data) => {
   });
 };
 
-module.exports = { InsertdldataEureka };
+module.exports = { GetScatterChartData };

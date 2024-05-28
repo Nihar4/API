@@ -1,9 +1,12 @@
 const { AddStocks } = require("../services/AddStocks");
 const { DeleteStrategy_Eureka } = require("../services/DeleteStrategy_Eureka");
 const { GetAllStrategies_Eureka } = require("../services/GetAllStrategies_Eureka");
+const { GetDlDataHedge } = require("../services/GetDlDataHedge");
 const { GetStrategy_Eureka } = require("../services/GetStrategy_Eureka");
 const { InsertStrategy_Eureka } = require("../services/InsertStrategy_Eureka");
 const { InsertdldataEureka } = require("../services/InsertdldataEureka");
+const { updateWeights } = require("../services/UpdateWeights");
+const { updatePercentageEureka } = require("../services/updatePercentageEureka");
 
 
 const AddStrategyController_Eureka = async (req, res, next) => {
@@ -101,19 +104,56 @@ const GetStrategyController_Eureka = async (req, res, next) => {
 
 const InsertDlDataEureka = async (req, res, next) => {
     try {
-        const { id } = req.body;
-        const data =  await InsertdldataEureka(id);
-        // console.log(strategies);
-        // const data = formatData(strategies);
-        return res.json({ error: false, message:"Dl model run successfully" ,data:data});
+        const { id } = req.query;
+        const data = req.body;
+        // console.log(data);
+        const result =  await InsertdldataEureka(id,data);
+
+        return res.json({ error: false, message:"Dl model run successfully" ,data:result});
     } catch (error) {
         console.log(error);
         return res.status(500).json({ error: true, message: "Internal server error." });
     }
 };
 
+const getDlDataForHedgeIndex = async(req,res,next) => {
+    try {
+        const { id } = req.query;
+        const data =  await GetDlDataHedge(id);
+        return res.json({ error: false, message:"Dl model run successfully" ,data:data});
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ error: true, message: "Internal server error." });
+    }
+}
+
+
+const update_WeightsController = async(req,res,next)=>{
+    try {
+        const { id } = req.query;
+        const data = req.body;
+        await updateWeights(id,data);
+        return res.json({ error: false, message:"Weights Updated Successfully" });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ error: true, message: "Internal server error." });
+    }
+}
+
+
+const update_percentageController = async(req,res,next)=>{
+    try {
+        const { id } = req.query;
+        const data = req.body;
+        await updatePercentageEureka(id,data);
+        return res.json({ error: false, message:"Percentage Updated Successfully" });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ error: true, message: "Internal server error." });
+    }
+}
 
 
 
 
-module.exports = { AddStrategyController_Eureka,GetAllStrategiesController_Eureka,DeleteStrategyController_Eureka,GetStrategyController_Eureka,InsertDlDataEureka};
+module.exports = { AddStrategyController_Eureka,GetAllStrategiesController_Eureka,DeleteStrategyController_Eureka,GetStrategyController_Eureka,InsertDlDataEureka,getDlDataForHedgeIndex,update_WeightsController,update_percentageController};
