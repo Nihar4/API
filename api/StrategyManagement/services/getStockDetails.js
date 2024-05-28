@@ -5,13 +5,14 @@ const getStockDetails = async (stock) => {
   return new Promise(async (resolve, reject) => {
     if (stock == stock.split(".")[0]) {
       // console.log(stock);
-      const query = `SELECT column_name FROM information_schema.columns WHERE table_name = 'master_benchmarks_price' AND column_name LIKE '%${encodeURIComponent(stock)}'`;
+      const query = `SELECT column_name FROM information_schema.columns WHERE table_name = 'master_benchmarks_price' AND column_name LIKE '%${stock}'`;
       // console.log(query);
       const result = await ExecuteQuery(query);
+      // console.log(stock,result);
   
       const columnName = result[0].column_name;
-      // console.log(columnName);
-      longname = columnName.substring(0, columnName.lastIndexOf("_")).replace(/_/g, " ");
+      const longname = columnName.substring(0, columnName.lastIndexOf("_")).replace(/_/g, " ");
+      // console.log(stock,longname);
 
       const data_query = `SELECT Month_Year, \`${columnName}\` FROM master_benchmarks_price WHERE \`${columnName}\` IS NOT NULL`;
 
@@ -19,10 +20,10 @@ const getStockDetails = async (stock) => {
       // console.log(data_result.length);
       const last = parseFloat(data_result[data_result.length-1][columnName])
       const secondLast = parseFloat(data_result[data_result.length-2][columnName])
-      // console.log(last,secondLast)
+      // console.log(stock,longname)
 
       const percentage_change = '-';
-      const detailed_name =longname.length >0 ? longname : stock ;
+      const detailed_name =longname ;
       const regularMarketPrice = last;
       const regularMarketChangePercent = last/ secondLast -1;
       resolve({
