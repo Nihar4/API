@@ -23,22 +23,45 @@ const getData = async (id) => {
     stock_array.push(stock_no);
     // console.log(stock_no);
 
-    const queryOptions = { period1: "1970-01-01" /* ... */ };
+    if (stock_no.split(".") == stock_no) {
+      const query = `SELECT column_name FROM information_schema.columns WHERE table_name = 'master_benchmarks_price' AND column_name LIKE '%${encodeURIComponent(
+        stock_no
+      )}'`;
+      const result = await ExecuteQuery(query);
 
-    let stockDetails = await yahooFinance.historical(`${stock_no}`, queryOptions);
-    // console.log(stockDetails);
+      const columnName = result[0].column_name;
+      // console.log(columnName);
 
-    const adjCloseArray = stockDetails.map(
-      (stockDetail) => stockDetail.adjClose
-    );
+      const data_query = `SELECT  \`${columnName}\` FROM master_benchmarks_price WHERE \`${columnName}\` IS NOT NULL`;
+      const data_result = await ExecuteQuery(data_query);
+      const value_array = [];
+      for (const value of data_result) {
+        value_array.push(parseFloat(value[columnName]));
+      }
+      temp_data_array.push(value_array);
+    } else {
+      const queryOptions = {
+        period1: "1970-01-01", // Start date
+        period2: new Date().toISOString().split("T")[0],
+        interval: "1mo",
+      };
 
-    
-    const value_array = [];
-    for (const value of adjCloseArray) {
-      value_array.push(parseFloat(value));
+      let stockDetails = await yahooFinance.historical(
+        `${stock_no}`,
+        queryOptions
+      );
+      // console.log(stockDetails);
+
+      const adjCloseArray = stockDetails.map(
+        (stockDetail) => stockDetail.adjClose
+      );
+
+      const value_array = [];
+      for (const value of adjCloseArray) {
+        value_array.push(parseFloat(value));
+      }
+      temp_data_array.push(value_array);
     }
-    temp_data_array.push(value_array);
-
     const q = `SELECT * FROM dl_jobs WHERE strategy_id=${id} AND security='${row["stock"]}'`;
     // console.log(q);
     const data = await ExecuteQuery(q);
@@ -84,7 +107,6 @@ const GetScatterChartData = async (id, data) => {
     try {
       const stock_data = await getData(id);
 
-
       const normalize_data = [];
       const stock_array = stock_data.stock_array;
 
@@ -106,8 +128,7 @@ const GetScatterChartData = async (id, data) => {
 
       for (const value of stock_array) {
         // console.log(value,data[value][0]);
-        if(data[value] ){
-
+        if (data[value]) {
           min_weight.push(parseFloat(data[value][0]));
           max_weight.push(parseFloat(data[value][1]));
         }
@@ -133,13 +154,12 @@ const GetScatterChartData = async (id, data) => {
         (obj) => JSON.stringify(obj) === JSON.stringify(response_data[0])
       );
 
-      if (allEqual) {   
-        resolve(response_data.slice(0,2));
-      }
-      else{ 
+      if (allEqual) {
+        resolve(response_data.slice(0, 2));
+      } else {
         resolve(response_data);
       }
-   
+
       // resolve([]);
     } catch (error) {
       console.log(error);
