@@ -192,13 +192,14 @@ const getChartData = async (stock, range, id) => {
 
         const dataChunks = [];
 
-        for (let i = 0; i < outputDataArray.length; i += 66) {
-          dataChunks.push(outputDataArray.slice(i, i + 66));
+        for (let i = 0; i < outputDataArray.length; i += 250) {
+          dataChunks.push(outputDataArray.slice(i, i + 250));
         }
 
         let dataWithDates = [];
 
         let len = dataChunks[0].length;
+        // console.log(len,dataChunks.length);
         const currentDate = new Date(startDate);
         for (let i = 0; i < len; i++) {
           dataWithDates.push({

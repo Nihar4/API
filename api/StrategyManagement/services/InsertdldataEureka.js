@@ -104,10 +104,10 @@ const InsertdldataEureka = async (id, data) => {
       max_weight = [];
 
       for (const value of stock_array) {
-        min_weight.push(parseFloat(data[value][0]));
-        max_weight.push(parseFloat(data[value][1]));
+        min_weight.push(parseFloat(data[value][0]) / 100);
+        max_weight.push(parseFloat(data[value][1]) / 100);
       }
-      // console.log(min_weight,max_weight);
+      console.log(min_weight,max_weight);
 
       // const x = PortfolioAllocation.meanVarianceEfficientFrontierPortfolios(stock_data.predicted_change_array,mat);
       const x = PortfolioAllocation.meanVarianceEfficientFrontierPortfolios(

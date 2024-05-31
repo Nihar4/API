@@ -120,7 +120,7 @@ const getStockDetails = async (stock) => {
       // console .log("hii");
       const result = await yahooFinance.quote(`${stock}`);
       // console.log(result);
-      const detailed_name = result.longName
+      const detailed_name = result.longNames
         ? result.longName
         : result.shortName;
       const regularMarketPrice = result.regularMarketPrice;
