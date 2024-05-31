@@ -129,8 +129,8 @@ const GetScatterChartData = async (id, data) => {
       for (const value of stock_array) {
         // console.log(value,data[value][0]);
         if (data[value]) {
-          min_weight.push(parseFloat(data[value][0]));
-          max_weight.push(parseFloat(data[value][1]));
+          min_weight.push(parseFloat(data[value][0])/100);
+          max_weight.push(parseFloat(data[value][1])/100);
         }
       }
       // console.log( stock_data.predicted_change_array);

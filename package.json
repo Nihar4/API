@@ -24,6 +24,6 @@
     "pca-js": "^1.0.2",
     "portfolio-allocation": "^0.0.11",
     "simple-statistics": "^7.8.3",
-    "yahoo-finance2": "^2.11.2"
+    "yahoo-finance2": "^2.11.3"
   }
 }
