@@ -3,8 +3,8 @@ const yahooFinance = require("yahoo-finance2").default;
 
 const getLongName = async (stock) => {
   return new Promise(async (resolve, reject) => {
-    if (stock == stock.split(".")[0]) {
-      const query = `SELECT column_name FROM information_schema.columns WHERE table_name = 'master_benchmarks_price' AND column_name LIKE '%${encodeURIComponent(stock)}'`;
+    if ("EH" == stock.split(".")[1]) {
+      const query = `SELECT column_name FROM information_schema.columns WHERE table_name = 'master_benchmarks_price' AND column_name LIKE '%${(stock.split(".")[0])}'`;
       const result = await ExecuteQuery(query);
 
       const columnName = result[0].column_name;
@@ -12,7 +12,7 @@ const getLongName = async (stock) => {
         .substring(0, columnName.lastIndexOf("_"))
         .replace(/_/g, " ");
       
-      const longname = stock_name ? stock_name:stock;
+      const longname = stock_name ? stock_name:stock.split(".")[0];
 
       resolve({
         longname
