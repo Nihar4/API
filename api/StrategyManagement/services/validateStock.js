@@ -8,17 +8,22 @@ const validateStock = async (stock) => {
     // resolve(true);
     // return;
     // }
+    if(stock.split(".")[1]=="EH"){
 
-    const query = `SELECT COLUMN_NAME
+      const query = `SELECT COLUMN_NAME
       FROM INFORMATION_SCHEMA.COLUMNS
       WHERE TABLE_NAME = 'master_benchmarks_price'
-      AND COLUMN_NAME LIKE '%${stock}'`;
-
+      AND COLUMN_NAME LIKE '%${stock.split(".")[0]}'`;
+      
       const data = await ExecuteQuery(query);
       if(data.length>0){
         resolve(true);
         return;
       }
+    }
+    else{
+
+
 
     let calculatedStartDate = new Date(1970, 0, 1);
     calculatedStartDate = calculatedStartDate.getTime() / 1000;
@@ -37,6 +42,7 @@ const validateStock = async (stock) => {
       // console.log(historicalData.length);
       resolve(true);
     }
+  }
   });
 };
 

@@ -3,8 +3,8 @@ const yahooFinance = require("yahoo-finance2").default;
 
 const getChartData = async (stock, range, id) => {
   return new Promise(async (resolve, reject) => {
-    if (stock == stock.split(".")[0]) {
-      const query = `SELECT column_name FROM information_schema.columns WHERE table_name = 'master_benchmarks_price' AND column_name LIKE '%${encodeURIComponent(stock)}'`;
+    if ("EH" == stock.split(".")[1]) {
+      const query = `SELECT column_name FROM information_schema.columns WHERE table_name = 'master_benchmarks_price' AND column_name LIKE '%${stock.split(".")[0]}'`;
       const result = await ExecuteQuery(query);
 
       const columnName = result[0].column_name;

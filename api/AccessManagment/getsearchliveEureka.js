@@ -13,7 +13,7 @@ const getsearchliveEureka = async (req, res, next) => {
     const db_result = await ExecuteQuery(db_query);
     const transformedArray = db_result.map((item) => {
       const decodedField = decodeURIComponent(item.Field);
-      const symbol = decodedField.split("_").pop();
+      const symbol = decodedField.split("_").pop()+".EH";
       let longname = decodedField;
       if (decodedField.includes("_")) {
         longname = decodedField.substring(0, decodedField.lastIndexOf("_")).replace(/_/g, " ");

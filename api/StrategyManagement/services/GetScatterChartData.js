@@ -23,9 +23,9 @@ const getData = async (id) => {
     stock_array.push(stock_no);
     // console.log(stock_no);
 
-    if (stock_no.split(".") == stock_no) {
+    if (stock_no.split(".")[1] == "EH") {
       const query = `SELECT column_name FROM information_schema.columns WHERE table_name = 'master_benchmarks_price' AND column_name LIKE '%${encodeURIComponent(
-        stock_no
+        stock_no.split(".")[0]
       )}'`;
       const result = await ExecuteQuery(query);
 

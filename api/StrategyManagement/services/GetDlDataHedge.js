@@ -12,7 +12,7 @@ const GetDlDataHedge = async (id) => {
             // console.log(data);
 
             for(const row of data){
-                const stock = row['security'];
+                const stock = row['security'].split(".")[0];
                 // console.log(stock);
                 const query = `SELECT column_name FROM information_schema.columns WHERE table_name = 'master_benchmarks_price' AND column_name LIKE '%${encodeURIComponent(stock)}'`;
                 // console.log(query);

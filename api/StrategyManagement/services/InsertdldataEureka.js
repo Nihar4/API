@@ -19,8 +19,8 @@ const getData = async (id) => {
 
   for (const row of data) {
     // console.log(row["stock"]);
-    const stock_no = row["stock"];
-    stock_array.push(stock_no);
+    const stock_no = row["stock"].split(".")[0];
+    stock_array.push(row["stock"]);
     // console.log(stock_no);
 
     const query = `SELECT column_name FROM information_schema.columns WHERE table_name = 'master_benchmarks_price' AND column_name LIKE '%${encodeURIComponent(

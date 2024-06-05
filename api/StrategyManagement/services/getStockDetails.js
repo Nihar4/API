@@ -3,9 +3,9 @@ const yahooFinance = require("yahoo-finance2").default;
 
 const getStockDetails = async (stock) => {
   return new Promise(async (resolve, reject) => {
-    if (stock == stock.split(".")[0]) {
+    if ("EH" == stock.split(".")[1]) {
       // console.log(stock);
-      const query = `SELECT column_name FROM information_schema.columns WHERE table_name = 'master_benchmarks_price' AND column_name LIKE '%${stock}'`;
+      const query = `SELECT column_name FROM information_schema.columns WHERE table_name = 'master_benchmarks_price' AND column_name LIKE '%${stock.split(".")[0]}'`;
       // console.log(query);
       const result = await ExecuteQuery(query);
       // console.log(stock,result);
