@@ -35,7 +35,7 @@ const validateStock = async (stock) => {
       period2: finalEndDate,
     });
 
-    if (historicalData.length < 500) {
+    if (historicalData.length < 1200) {
       // console.log(historicalData.length);
       resolve(false);
     } else {
