@@ -121,7 +121,7 @@ const getStockDetails = async (stock) => {
       let result;
 
       try {
-        const result = await yahooFinance.quote(`${stock}`);
+         result = await yahooFinance.quote(`${stock}`);
         
       } catch (error) {
         console.log(error);
