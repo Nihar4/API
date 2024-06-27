@@ -19,7 +19,13 @@ const getLongName = async (stock) => {
       });
       return;
     } else {
-        const results = await yahooFinance.quote(stock);
+      let results;
+      try {
+        
+         results = await yahooFinance.quote(stock);
+      } catch (error) {
+        console.log(error);
+      }
         // resolve(results);
         // return;
         const longname = results.longName ? results.longName : results.shortName;

@@ -118,7 +118,14 @@ const getStockDetails = async (stock) => {
         }
       }
       // console .log("hii");
-      const result = await yahooFinance.quote(`${stock}`);
+      let result;
+
+      try {
+        const result = await yahooFinance.quote(`${stock}`);
+        
+      } catch (error) {
+        console.log(error);
+      }
       // console.log(result);
       const detailed_name = result.longNames
         ? result.longName
