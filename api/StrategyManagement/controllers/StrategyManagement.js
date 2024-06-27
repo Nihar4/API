@@ -13,6 +13,7 @@ const { getLongName } = require("../services/getLongName");
 const { updateWeights_asset } = require("../services/updateWeights_asset");
 const { GetScatterChartData } = require("../services/GetScatterChartData");
 const { updatePercentage_asset } = require("../services/updatePercentage_asset");
+const { GetPerformaceData } = require("../services/GetPerformaceData");
 
 const AddStrategyController = async (req, res, next) => {
   try {
@@ -384,6 +385,29 @@ const GetScatterChartDataController = async (req, res, next) => {
   }
 };
 
+
+const GetPerformaceDataController = async (req, res, next) => {
+  try {
+
+    const data = req.body;
+    // console.log(data);
+    const result = await GetPerformaceData(data);
+
+    return res.json({
+      error: false,
+      message: "Performance data get successfully",
+      data: result,
+    });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ error: true, message: "Internal server error." });
+  }
+};
+
+
+
 module.exports = {
   AddStrategyController,
   GetAllStrategiesController,
@@ -399,5 +423,6 @@ module.exports = {
   getlongname,
   update_WeightsController_asset,
   GetScatterChartDataController,
-  update_PercentageController_asset
+  update_PercentageController_asset,
+  GetPerformaceDataController
 };
