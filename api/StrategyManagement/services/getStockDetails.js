@@ -7,12 +7,12 @@ const getStockDetails = async (stock) => {
       if ("EH" === stock.split(".")[1]) {
         const query = `SELECT column_name FROM information_schema.columns WHERE table_name = 'master_benchmarks_price' AND column_name LIKE '%${stock.split(".")[0]}'`;
         const result = await ExecuteQuery(query);
-        
+
         if (result.length === 0) {
           reject(new Error("No columns found for the stock"));
           return;
         }
-        
+
         const columnName = result[0].column_name;
         const longname = columnName.substring(0, columnName.lastIndexOf("_")).replace(/_/g, " ");
 
