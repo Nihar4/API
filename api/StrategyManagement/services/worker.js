@@ -54,8 +54,8 @@ const getData = async (stock) => {
             return { adjCloseArray: adjCloseArray, date_array: date_array, marketCap: marketCap.marketCap, regularMarketPrice: marketCap.regularMarketPrice };
         }
     } catch (error) {
-        console.error(`Error fetching data for ${stock}:`, error);
-        throw error;
+        console.log(`Error fetching data for ${stock}:`, error);
+        // throw error;
     }
 };
 
