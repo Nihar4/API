@@ -11,8 +11,8 @@ const getStockPrediction = async (symbol) => {
 
         const results = await ExecuteQuery(query, [symbol]);
 
+        const predictionData = results[0];
         if (results.length > 0) {
-            const predictionData = results[0];
             const predictionTimestamp = new Date(predictionData.timestamp);
 
             const fifteenDaysAgoTimestamp = new Date();

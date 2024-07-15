@@ -2,6 +2,64 @@ const { ExecuteQuery } = require("../../../utils/ExecuteQuery");
 const yahooFinance = require("yahoo-finance2").default;
 const stat = require("simple-statistics");
 const fs = require("fs");
+const { updateStockPrediction } = require('./updateStockPrediction');
+
+const getTotalInvestmentValue = async (results, id) => {
+  const query = `
+      SELECT *
+      FROM portfolio_performance
+      WHERE strategy_id = ?
+      ORDER BY timestamp DESC
+      LIMIT 1
+    `;
+  const data = await ExecuteQuery(query, [id]);
+  if (data.length == 0) return 10000000;
+
+  let totalInvestmentValue = 0;
+  const portfolio = JSON.parse(data[0].portfolio);
+  portfolio.data.forEach(portfolioItem => {
+    const stockItem = results.find(stock => stock.symbol === portfolioItem.symbol);
+    if (stockItem) {
+      totalInvestmentValue += portfolioItem.noOfShares * stockItem.currentPrice;
+    }
+  });
+  totalInvestmentValue = totalInvestmentValue + Number(data[0].cash_value);
+  console.log(totalInvestmentValue);
+  return Number(totalInvestmentValue.toFixed(2));
+}
+
+const processResults = (results, totalInvestment) => {
+  const filteredResults = results.filter(item => item.pred_percentage > 0);
+
+  const sortedResults = filteredResults.sort((a, b) => b.pred_percentage - a.pred_percentage);
+
+  const topResults = sortedResults.slice(0, 25).map(item => ({
+    ...item,
+    pred_percentage: item.pred_percentage * 100
+  }));
+
+  const totalMarketCap = topResults.reduce((sum, item) => sum + item.market_cap, 0);
+  let totalAmount = 0;
+  const investmentDetails = topResults.map(item => {
+    const weight = (item.market_cap / totalMarketCap) * 100;
+    const investmentAmount = (weight / 100) * totalInvestment;
+    const noOfShares = Math.floor(investmentAmount / item.currentPrice);
+    const amount = Number((noOfShares * item.currentPrice).toFixed(2));
+    totalAmount += amount;
+    totalAmount = Number(totalAmount.toFixed(2));
+
+    return {
+      symbol: item.symbol,
+      market_cap: item.market_cap,
+      pred_percentage: item.pred_percentage,
+      currentPrice: item.currentPrice,
+      weight: weight,
+      noOfShares: noOfShares,
+      amount: amount
+    };
+  });
+  return { data: investmentDetails, totalPortfolio: totalInvestment, totalInvestmentAmount: totalAmount, cashAmount: Number((totalInvestment - totalAmount).toFixed(2)) };
+};
 
 const getData = async (stock) => {
   try {
@@ -26,7 +84,8 @@ const getData = async (stock) => {
         date_array.push(date);
       });
 
-      return { adjCloseArray: adjCloseArray, date_array: date_array };
+
+      return { adjCloseArray: adjCloseArray, date_array: date_array, symbol: stock };
     } else {
       const queryOptions = { period1: "1970-01-01" /* ... */ };
 
@@ -35,16 +94,20 @@ const getData = async (stock) => {
       const adjCloseArray = stockDetails.map((stockDetail) => stockDetail.adjClose);
       const date_array = stockDetails.map((stockDetail) => stockDetail.date.toLocaleDateString());
 
-      return { adjCloseArray: adjCloseArray, date_array: date_array };
+
+      return { adjCloseArray: adjCloseArray, date_array: date_array, symbol: stock };
     }
   } catch (error) {
-    console.error(`Error fetching data for ${stock}:`, error);
-    throw error;
+    console.log(`Error fetching data for ${stock}:`, error);
+    // throw error;
   }
 };
 
-async function processData(data, stock) {
+const processStock = async (stock, stockData) => {
   try {
+
+    const data = stockData.adjCloseArray;
+
     var status = 0;
 
     if ("EH" == stock.split(".")[1]) {
@@ -65,28 +128,57 @@ async function processData(data, stock) {
       var topData = [];
       var usedIndices = new Set();
 
+      // optimize
+
+      // while (iterations < data.length - 22) {
+      // var randomIndex = iterations
       while (iterations < 2000000) {
         var randomIndex = Math.floor(Math.random() * (data.length - 22));
-        var randomData = data.slice(randomIndex, randomIndex + 22);
-
-        var corr = stat.sampleCorrelation(primaryData, randomData);
-
-        corrInitial = corr;
-        let prev_value;
-
-        if (randomIndex != 0) {
-          prev_value = data[randomIndex - 1];
-        } else {
-          prev_value = data[0];
-        }
-
-        randomData = [prev_value, ...randomData];
         if (!usedIndices.has(randomIndex)) {
+          var randomData = data.slice(randomIndex, randomIndex + 22);
+          var corr = stat.sampleCorrelation(primaryData, randomData);
+
+          corrInitial = corr;
+          let prev_value;
+
+          if (randomIndex != 0) {
+            prev_value = data[randomIndex - 1];
+          } else {
+            prev_value = data[0];
+          }
+
+          randomData = [prev_value, ...randomData];
+
           topData.push({ randomData, corr });
           usedIndices.add(randomIndex);
         }
         iterations++;
       }
+
+      // while (iterations < 2000000) {
+      //   var randomIndex = Math.floor(Math.random() * (data.length - 22));
+      //   var randomData = data.slice(randomIndex, randomIndex + 22);
+
+      //   var corr = stat.sampleCorrelation(primaryData, randomData);
+
+      //   corrInitial = corr;
+      //   let prev_value;
+
+      //   if (randomIndex != 0) {
+      //     prev_value = data[randomIndex - 1];
+      //   } else {
+      //     prev_value = data[0];
+      //   }
+
+      //   randomData = [prev_value, ...randomData];
+      //   if (!usedIndices.has(randomIndex)) {
+      //     topData.push({ randomData, corr });
+      //     usedIndices.add(randomIndex);
+      //   }
+      //   iterations++;
+      // }
+
+      // console.log(data.length, topData.length)
 
       topData.sort((a, b) => b.corr - a.corr);
       topData = topData.slice(0, 5);
@@ -119,108 +211,119 @@ async function processData(data, stock) {
         predicted.push({ predicted_data, corr, percentage });
       }
 
-      return predicted;
+      const prediction_return = CalcPrediction(stock, stockData, predicted)
+
+
+
+      return (prediction_return)
     }
   } catch (error) {
     console.error(`Error processing data for ${stock}:`, error);
-    throw error;
+    return (error);
   }
+
 }
 
-const GetPerformaceData = async (data) => {
-  return new Promise(async (resolve, reject) => {
-    const res_array = [];
-    const stockArray = [];
+const CalcPrediction = (stockName, stockData, result) => {
 
-    try {
-      await Promise.all(
-        data.map(async (stockObj, stockIndex) => {
-          await Promise.all(
-            stockObj.stock.split(",").map(async (item, index) => {
-              try {
-                const stockName = item.trim();
-                const data = await getData(stockName);
-                const result = await processData(data.adjCloseArray, stockName);
-                console.log(stockName);
-
-                let average_randomData = [];
-
-                for (let i = 0; i < 22; i++) {
-                  let sum = 0;
-                  for (let j = 0; j < 5; j++) {
-                    sum += result[j].predicted_data[i];
-                  }
-                  average_randomData.push(sum / 5);
-                }
-
-                if ("EH" == stockName.split(".")[1]) {
-                  average_randomData = average_randomData.slice(0, 1);
-                }
-
-                let avg_corr;
-
-                if ("EH" == stockName.split(".")[1]) {
-                  let sum = 0;
-                  for (let i = 0; i < result.length; i++) {
-                    sum += result[i].corr;
-                  }
-                  avg_corr = sum / 1;
-                } else {
-                  let sum = 0;
-                  for (let i = 0; i < result.length; i++) {
-                    sum += result[i].corr;
-                  }
-                  avg_corr = sum / result.length;
-                }
-
-                let predictedDataString;
-                if ("EH" == stockName.split(".")[1]) {
-                  predictedDataString = result
-                    .map((entry) => entry.predicted_data.slice(0, 1).join(","))
-                    .join(",");
-                } else {
-                  predictedDataString = result
-                    .map((entry) => entry.predicted_data.join(","))
-                    .join(",");
-                }
-
-                const averageRandomDataString = average_randomData.join(",");
-                const combinedString = `${predictedDataString},${averageRandomDataString}`;
-
-                const avg_percentage =
-                  average_randomData[average_randomData.length - 1] /
-                  data.adjCloseArray[data.adjCloseArray.length - 1] -
-                  1;
-
-                stockArray.push(stockName);
-                let marketCap = 0;
-
-                try {
-                  marketCap = await yahooFinance.quote(`${stockName}`);
-                } catch (error) {
-                  console.log(`Error fetching market cap for ${stockName}:`, error);
-                }
-
-                let objj = {
-                  stock: stockName,
-                  pred_percentage: avg_percentage,
-                  market_cap: marketCap.marketCap,
-                };
-
-                res_array.push(objj);
-              } catch (error) {
-                console.log(`Error processing stock ${item}:`, error);
-              }
-            })
-          );
-        })
-      );
-      resolve(res_array);
-    } catch (error) {
-      console.log(`Error processing performance data:`, error);
-      reject(error);
+  let average_randomData = [];
+  for (let i = 0; i < 22; i++) {
+    let sum = 0;
+    for (let j = 0; j < 5; j++) {
+      sum += result[j].predicted_data[i];
     }
-  });
-};
+    average_randomData.push(sum / 5);
+  }
+
+  if ("EH" == stockName.split(".")[1]) {
+    average_randomData = average_randomData.slice(0, 1);
+  }
+
+  let avg_corr;
+  if ("EH" == stockName.split(".")[1]) {
+    let sum = 0;
+    for (let i = 0; i < result.length; i++) {
+      sum += result[i].corr;
+    }
+    avg_corr = sum / 1;
+  } else {
+    let sum = 0;
+    for (let i = 0; i < result.length; i++) {
+      sum += result[i].corr;
+    }
+    avg_corr = sum / result.length;
+  }
+
+  let predictedDataString;
+  if ("EH" == stockName.split(".")[1]) {
+    predictedDataString = result
+      .map((entry) => entry.predicted_data.slice(0, 1).join(","))
+      .join(",");
+  } else {
+    predictedDataString = result
+      .map((entry) => entry.predicted_data.join(","))
+      .join(",");
+  }
+
+  const averageRandomDataString = average_randomData.join(",");
+  const combinedString = `${predictedDataString},${averageRandomDataString}`;
+
+  const avg_percentage =
+    average_randomData[average_randomData.length - 1] /
+    stockData.adjCloseArray[stockData.adjCloseArray.length - 1] -
+    1;
+
+  let objj = {
+    symbol: stockName,
+    pred_percentage: avg_percentage,
+    market_cap: stockData.marketCap,
+    currentPrice: stockData.regularMarketPrice
+  };
+
+
+
+  return objj;
+}
+
+const GetPerformaceData = async (dataArray, id) => {
+  const startTime = new Date().getTime();
+
+  let symbolsArray = dataArray.flat();
+
+  const promises = symbolsArray.map(symbol => getData(symbol));
+  const symbolsData = await Promise.all(promises);
+  const quoteResults = await yahooFinance.quote(symbolsArray);
+
+  const combinedData = symbolsArray.map((symbol, index) => ({
+    name: symbol,
+    ...symbolsData[index],
+    ...quoteResults[index]
+  }));
+
+  const endTime = new Date().getTime();
+  const executionTime = endTime - startTime;
+  console.log(`Execution time: ${executionTime} milliseconds`);
+
+  const stockPromises = combinedData.map(async (item) => {
+    try {
+      const stockName = item.name.trim();
+      const res = await processStock(stockName, item);
+      return res;
+    } catch (error) {
+      console.log(`Error processing stock ${item}:`, error);
+    }
+  })
+
+  const results = await Promise.all(stockPromises);
+
+  results.map(async (res) => {
+    await updateStockPrediction(res.symbol, res.pred_percentage);
+  })
+
+  const totalInvestment = await getTotalInvestmentValue(results, id);
+  const filterRes = processResults(results, totalInvestment);
+  console.log(filterRes.data.length)
+  return filterRes;
+}
 
 module.exports = { GetPerformaceData };

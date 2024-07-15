@@ -1,6 +1,7 @@
 const { Worker } = require('worker_threads');
 const { ExecuteQuery } = require('../../../utils/ExecuteQuery');
 const { updateStockPrediction } = require('./updateStockPrediction');
+const { default: yahooFinance } = require('yahoo-finance2');
 
 const getTotalInvestmentValue = async (results, id) => {
     const query = `
@@ -59,12 +60,71 @@ const processResults = (results, totalInvestment) => {
     return { data: investmentDetails, totalPortfolio: totalInvestment, totalInvestmentAmount: totalAmount, cashAmount: Number((totalInvestment - totalAmount).toFixed(2)) };
 };
 
+const getData = async (stock) => {
+    try {
+        if ("EH" == stock.split(".")[1]) {
+            let stockName = stock.split(".")[0];
+            const query = `SELECT column_name FROM information_schema.columns WHERE table_name = 'master_benchmarks_price' AND column_name LIKE '%${encodeURIComponent(stockName)}'`;
+
+            const result = await ExecuteQuery(query);
+            const columnName = result[0].column_name;
+            const data_query = `SELECT Month_Year, \`${columnName}\` FROM master_benchmarks_price WHERE \`${columnName}\` IS NOT NULL`;
+
+            const data_result = await ExecuteQuery(data_query);
+
+            const adjCloseArray = [];
+            const date_array = [];
+
+            data_result.forEach((row) => {
+                const [month, year] = row.Month_Year.split("-");
+                const date = new Date(year, month - 1, 1).toLocaleDateString();
+
+                adjCloseArray.push(parseFloat(row[columnName]));
+                date_array.push(date);
+            });
+
+
+            return { adjCloseArray: adjCloseArray, date_array: date_array, symbol: stock };
+        } else {
+            const queryOptions = { period1: "1970-01-01" /* ... */ };
+
+            let stockDetails = await yahooFinance.historical(`${stock}`, queryOptions);
+
+            const adjCloseArray = stockDetails.map((stockDetail) => stockDetail.adjClose);
+            const date_array = stockDetails.map((stockDetail) => stockDetail.date.toLocaleDateString());
+
+
+            return { adjCloseArray: adjCloseArray, date_array: date_array, symbol: stock };
+        }
+    } catch (error) {
+        console.log(`Error fetching data for ${stock}:`, error);
+        // throw error;
+    }
+};
+
 const GetPerformanceDataWorker = async (dataArray, id) => {
+    const startTime = new Date().getTime();
+
     const results = [];
     let completedWorkers = 0;
-    let numWorkers = 6;
+    let numWorkers = 1;
+    let symbolsArray = dataArray.flat();
 
-    const batchedData = chunkArray(dataArray.flat(), numWorkers);
+    const promises = symbolsArray.map(symbol => getData(symbol));
+    const symbolsData = await Promise.all(promises);
+    const quoteResults = await yahooFinance.quote(symbolsArray);
+
+    const combinedData = symbolsArray.map((symbol, index) => ({
+        name: symbol,
+        ...symbolsData[index],
+        ...quoteResults[index]
+    }));
+
+    const batchedData = chunkArray(combinedData, numWorkers);
+
+    const endTime = new Date().getTime();
+    const executionTime = endTime - startTime;
+    console.log(`Execution time: ${executionTime} milliseconds`);
 
     const workerPromises = batchedData.map((batch) => {
         return new Promise((resolve, reject) => {

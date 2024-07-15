@@ -2,6 +2,7 @@ const { default: yahooFinance } = require("yahoo-finance2");
 const { ExecuteQuery } = require("../../../utils/ExecuteQuery");
 const { GetPredictionOnlyWorker } = require("./GetPerformanceDataWorker");
 const { getStockPrediction } = require("./getStockPrediction");
+const { GetPerformaceData } = require("./GetPerformaceData");
 
 
 const GetPortfolio = async (id) => {
@@ -28,24 +29,27 @@ const GetPortfolio = async (id) => {
                 result = JSON.parse(data[0].portfolio);
                 const calcPred = [];
 
-                await Promise.all(result.data.map(async (item) => {
+                const symbolArray = result.data.map((item) => item.symbol);
+                const StockData = await yahooFinance.quote(symbolArray);
+
+                await Promise.all(result.data.map(async (item, index) => {
                     const pred = await getStockPrediction(item.symbol);
                     if (pred) {
                         item.pred_percentage = pred * 100;
-                        const StockData = await yahooFinance.quote(`${item.symbol}`);
-                        item.market_cap = StockData.marketCap;
-                        item.currentPrice = StockData.regularMarketPrice;
-                        item.amount = item.noOfShares * StockData.regularMarketPrice;
+                        item.market_cap = StockData[index].marketCap;
+                        item.currentPrice = StockData[index].regularMarketPrice;
+                        item.amount = item.noOfShares * StockData[index].regularMarketPrice;
                     } else {
                         calcPred.push(item.symbol);
                     }
                 }));
                 if (calcPred.length > 0) {
-                    const predictions = await GetPredictionOnlyWorker(calcPred);
-                    predictions.forEach((pred) => {
+                    const predictions = await GetPerformaceData(calcPred, id);
+                    console.log(predictions.data.length);
+                    predictions.data.forEach((pred) => {
                         const item = result.data.find(stock => stock.symbol === pred.symbol);
                         if (item) {
-                            item.pred_percentage = Number((pred.pred_percentage * 100).toFixed(2));
+                            item.pred_percentage = Number((pred.pred_percentage).toFixed(2));
                             item.market_cap = pred.market_cap;
                             item.currentPrice = pred.currentPrice;
                             item.amount = (pred.currentPrice * item.noOfShares)
