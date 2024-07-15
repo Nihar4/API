@@ -6,7 +6,7 @@ const { connectDB } = require("./connection/index.js");
 const { default: yahooFinance } = require("yahoo-finance2");
 
 const app = express();
-
+connectDB();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -22,12 +22,8 @@ dotenv.config({
   path: "./.env",
 });
 
-connectDB();
-
 app.use("/api/v1", routes);
 
 app.listen(process.env.PORT, () => {
   console.log(`app listening on port ${process.env.PORT}`);
 });
-
-

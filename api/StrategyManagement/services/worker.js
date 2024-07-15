@@ -2,67 +2,10 @@ const { parentPort, workerData } = require('worker_threads');
 const yahooFinance = require("yahoo-finance2").default;
 const stat = require("simple-statistics");
 
-const ExecuteQuery = require("../../../utils/ExecuteQuery");
-const { updateStockPrediction } = require('./updateStockPrediction');
-
-const getData = async (stock) => {
+const processData = async (stock, stockData) => {
     try {
-        if ("EH" == stock.split(".")[1]) {
-            let stockName = stock.split(".")[0];
-            const query = `SELECT column_name FROM information_schema.columns WHERE table_name = 'master_benchmarks_price' AND column_name LIKE '%${encodeURIComponent(stockName)}'`;
 
-            const result = await ExecuteQuery(query);
-            const columnName = result[0].column_name;
-            const data_query = `SELECT Month_Year, \`${columnName}\` FROM master_benchmarks_price WHERE \`${columnName}\` IS NOT NULL`;
-
-            const data_result = await ExecuteQuery(data_query);
-
-            const adjCloseArray = [];
-            const date_array = [];
-
-            data_result.forEach((row) => {
-                const [month, year] = row.Month_Year.split("-");
-                const date = new Date(year, month - 1, 1).toLocaleDateString();
-
-                adjCloseArray.push(parseFloat(row[columnName]));
-                date_array.push(date);
-            });
-            let marketCap = 0;
-
-            try {
-                marketCap = await yahooFinance.quote(`${stock}`);
-            } catch (error) {
-                console.log(`Error fetching market cap for ${stock}:`, error);
-            }
-
-            return { adjCloseArray: adjCloseArray, date_array: date_array, marketCap: marketCap.marketCap, regularMarketPrice: marketCap.regularMarketPrice };
-        } else {
-            const queryOptions = { period1: "1970-01-01" /* ... */ };
-
-            let stockDetails = await yahooFinance.historical(`${stock}`, queryOptions);
-
-            const adjCloseArray = stockDetails.map((stockDetail) => stockDetail.adjClose);
-            const date_array = stockDetails.map((stockDetail) => stockDetail.date.toLocaleDateString());
-
-            let marketCap = 0;
-
-            try {
-                marketCap = await yahooFinance.quote(`${stock}`);
-            } catch (error) {
-                console.log(`Error fetching market cap for ${stock}:`, error);
-            }
-            return { adjCloseArray: adjCloseArray, date_array: date_array, marketCap: marketCap.marketCap, regularMarketPrice: marketCap.regularMarketPrice };
-        }
-    } catch (error) {
-        console.log(`Error fetching data for ${stock}:`, error);
-        // throw error;
-    }
-};
-
-const processData = async (stock) => {
-    try {
-        const historical = await getData(stock);
-        const data = historical.adjCloseArray;
+        const data = stockData.adjCloseArray;
 
         var status = 0;
 
@@ -83,29 +26,30 @@ const processData = async (stock) => {
             var iterations = 0;
             var topData = [];
             var usedIndices = new Set();
-
-            while (iterations < 2000000) {
-                var randomIndex = Math.floor(Math.random() * (data.length - 22));
-                var randomData = data.slice(randomIndex, randomIndex + 22);
-
-                var corr = stat.sampleCorrelation(primaryData, randomData);
-
-                corrInitial = corr;
-                let prev_value;
-
-                if (randomIndex != 0) {
-                    prev_value = data[randomIndex - 1];
-                } else {
-                    prev_value = data[0];
-                }
-
-                randomData = [prev_value, ...randomData];
+            while (iterations < data.length - 22) {
+                var randomIndex = iterations
                 if (!usedIndices.has(randomIndex)) {
+                    var randomData = data.slice(randomIndex, randomIndex + 22);
+                    var corr = stat.sampleCorrelation(primaryData, randomData);
+
+                    corrInitial = corr;
+                    let prev_value;
+
+                    if (randomIndex != 0) {
+                        prev_value = data[randomIndex - 1];
+                    } else {
+                        prev_value = data[0];
+                    }
+
+                    randomData = [prev_value, ...randomData];
+
                     topData.push({ randomData, corr });
                     usedIndices.add(randomIndex);
                 }
                 iterations++;
             }
+
+            // console.log(data.length, topData.length)
 
             topData.sort((a, b) => b.corr - a.corr);
             topData = topData.slice(0, 5);
@@ -138,7 +82,9 @@ const processData = async (stock) => {
                 predicted.push({ predicted_data, corr, percentage });
             }
 
-            const prediction_return = CalcPrediction(stock, historical, predicted)
+            const prediction_return = CalcPrediction(stock, stockData, predicted)
+
+
 
             return (prediction_return)
         }
@@ -149,7 +95,8 @@ const processData = async (stock) => {
 
 }
 
-const CalcPrediction = (stockName, data, result) => {
+const CalcPrediction = (stockName, stockData, result) => {
+
     let average_randomData = [];
     for (let i = 0; i < 22; i++) {
         let sum = 0;
@@ -194,15 +141,18 @@ const CalcPrediction = (stockName, data, result) => {
 
     const avg_percentage =
         average_randomData[average_randomData.length - 1] /
-        data.adjCloseArray[data.adjCloseArray.length - 1] -
+        stockData.adjCloseArray[stockData.adjCloseArray.length - 1] -
         1;
 
     let objj = {
         symbol: stockName,
         pred_percentage: avg_percentage,
-        market_cap: data.marketCap,
-        currentPrice: data.regularMarketPrice
+        market_cap: stockData.marketCap,
+        currentPrice: stockData.regularMarketPrice
     };
+
+
+
     return objj;
 }
 
@@ -211,9 +161,8 @@ const processStock = async () => {
     try {
         const stockPromises = stockArray.map(async (item) => {
             try {
-                const stockName = item.trim();
-                const res = await processData(stockName);
-
+                const stockName = item.name.trim();
+                const res = await processData(stockName, item);
                 return res;
             } catch (error) {
                 console.log(`Error processing stock ${item}:`, error);

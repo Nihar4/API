@@ -392,14 +392,16 @@ const GetScatterChartDataController = async (req, res, next) => {
 // On Run Analysis
 const GetPerformanceDataController = async (req, res, next) => {
   try {
-    const data = req.body;
-    // console.log(data);
-    const result = await GetPerformaceData(data);
+    const { id, email } = req.body;
+    const data = await GetStrategy(id);
+    const formattedData = GetFormattedStrategyData(data);
+    const result = await GetPerformaceData(formattedData, id);
+    // const result = await GetPerformanceDataWorker(formattedData, id);
 
     return res.json({
       error: false,
       message: "Performance data get successfully",
-      data: result,
+      data: { ...result, id },
     });
   } catch (error) {
     console.log(error);
