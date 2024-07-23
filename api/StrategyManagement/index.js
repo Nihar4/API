@@ -1,5 +1,5 @@
 const { AddStrategyController_Eureka, GetAllStrategiesController_Eureka, DeleteStrategyController_Eureka, GetStrategyController_Eureka, InsertDlDataEureka, getDlDataForHedgeIndex, update_WeightsController, update_percentageController } = require("./controllers/EurekaStrategyManagement");
-const { AddStrategyController, GetAllStrategiesController, DeleteStrategyController, GetStrategyController, getDlData, postDlData, getStockInfo, getChartDataDetails, ValidateStock, jobqueue, getJobQueue, getlongname, update_WeightsController_asset, GetScatterChartDataController, update_PercentageController_asset, GetPerformanceDataController, UpdatePortfolioController, GetPortfolioController } = require("./controllers/StrategyManagement");
+const { AddStrategyController, GetAllStrategiesController, DeleteStrategyController, GetStrategyController, getDlData, postDlData, getStockInfo, getChartDataDetails, ValidateStock, jobqueue, getJobQueue, getlongname, update_WeightsController_asset, GetScatterChartDataController, update_PercentageController_asset, GetPerformanceDataController, UpdatePortfolioController, GetPortfolioController, GetPortfolioChartController } = require("./controllers/StrategyManagement");
 
 const StrategyManagement = require("express").Router()
 
@@ -24,6 +24,9 @@ StrategyManagement.post("/insertdldata-asset", GetScatterChartDataController)
 StrategyManagement.post("/getPortfolio", GetPortfolioController)
 StrategyManagement.post("/calculate-performance", GetPerformanceDataController)
 StrategyManagement.post("/update-portfolio", UpdatePortfolioController)
+StrategyManagement.post("/getPortfolio-Chart", GetPortfolioChartController)
+
+
 
 
 StrategyManagement.post("/insertEureka", AddStrategyController_Eureka)

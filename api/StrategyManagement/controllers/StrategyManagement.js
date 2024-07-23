@@ -18,6 +18,7 @@ const { GetFormattedStrategyData } = require("../services/GetFormattedStrategyDa
 const { GetPerformanceDataWorker } = require("../services/GetPerformanceDataWorker");
 const { UpdatePortfolio } = require("../services/UpdatePortfolio");
 const { GetPortfolio } = require("../services/GetPortfolio");
+const { GetPortfolioChart } = require("../services/GetPortfolioChart");
 
 const AddStrategyController = async (req, res, next) => {
   try {
@@ -305,7 +306,7 @@ const getJobQueue = async (req, res, next) => {
     }
     const dl_data = await getjobqueue(email_id);
 
-    return res.json({
+    return res.status(200).json({
       error: false,
       message: "Data get successfully",
       data: dl_data,
@@ -447,6 +448,23 @@ const GetPortfolioController = async (req, res, next) => {
   }
 }
 
+const GetPortfolioChartController = async (req, res, next) => {
+  try {
+    const { id, email } = req.body;
+    const data = await GetPortfolioChart(id);
+    return res.json({
+      error: false,
+      message: "Performance chart get successfully",
+      data: data,
+    });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ error: true, message: "Internal server error." });
+  }
+}
+
 module.exports = {
   AddStrategyController,
   GetAllStrategiesController,
@@ -465,5 +483,6 @@ module.exports = {
   update_PercentageController_asset,
   GetPerformanceDataController,
   UpdatePortfolioController,
-  GetPortfolioController
+  GetPortfolioController,
+  GetPortfolioChartController
 };

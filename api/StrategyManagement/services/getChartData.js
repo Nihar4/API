@@ -38,11 +38,11 @@ const getChartData = async (stock, range, id) => {
         );
 
         const latestOutputData = result[0].output_data;
-        
+
         const lastDate = new Date(
           candlesWithoutAdjClose[candlesWithoutAdjClose.length - 1].date
         );
-        
+
         const startDate = new Date(
           lastDate.getFullYear(),
           lastDate.getMonth() + 1,
@@ -50,10 +50,9 @@ const getChartData = async (stock, range, id) => {
         );
         startDate.setHours(startDate.getHours() + 5);
         startDate.setMinutes(startDate.getMinutes() + 30);
-        
+
         //  console.log(startDate);
         const outputDataArray = latestOutputData.split(",");
-        console.log(stock , outputDataArray.length);
 
         const dataChunks = [];
 
@@ -99,7 +98,7 @@ const getChartData = async (stock, range, id) => {
           );
           resolve(filteredData);
         }
-        else if(range == "5Y"){
+        else if (range == "5Y") {
           const fiveYearAgo = new Date();
           fiveYearAgo.setFullYear(fiveYearAgo.getFullYear() - 5);
 
@@ -108,12 +107,12 @@ const getChartData = async (stock, range, id) => {
           );
           resolve(filteredData);
         }
-        else{
+        else {
           filteredData = candlesWithAdditionalData;
           resolve(filteredData);
         }
         resolve(candlesWithAdditionalData);
-        
+
       } catch (error) {
         console.log(error);
       }
@@ -166,7 +165,7 @@ const getChartData = async (stock, range, id) => {
         period2: finalEndDate,
         interval: interval,
       });
-
+      // console.log(historicalData[historicalData.length - 1])
       // resolve(historicalData);
 
       const candlesWithoutAdjClose = historicalData.map((candle) => {
@@ -188,12 +187,12 @@ const getChartData = async (stock, range, id) => {
         const startDate = new Date();
         startDate.setDate(startDate.getDate() + 1);
         const outputDataArray = latestOutputData.split(",");
-        // console.log(outputDataArray.length);
 
         const dataChunks = [];
+        // console.log(outputDataArray.length)
 
-        for (let i = 0; i < outputDataArray.length; i += 250) {
-          dataChunks.push(outputDataArray.slice(i, i + 250));
+        for (let i = 0; i < outputDataArray.length; i += 66) {
+          dataChunks.push(outputDataArray.slice(i, i + 66));
         }
 
         let dataWithDates = [];
@@ -214,17 +213,23 @@ const getChartData = async (stock, range, id) => {
           currentDate.setDate(currentDate.getDate() + 1);
         }
 
+        let FilterData;
         if (range === "5Y" || range === "MAX") {
-          dataWithDates = dataWithDates.filter(
+          FilterData = dataWithDates.filter(
             (data, index) => index % 7 === 0
           );
         }
 
-        // console.log(dataWithDates.length);
+        const lastIndex = dataWithDates.length - 1;
+        const lastElement = dataWithDates[lastIndex];
 
+        if (FilterData[FilterData.length - 1] !== lastElement) {
+          FilterData.push(lastElement);
+        }
+        // console.log(candlesWithoutAdjClose[candlesWithoutAdjClose.length - 1])
         const candlesWithAdditionalData = [
           ...candlesWithoutAdjClose,
-          ...dataWithDates,
+          ...FilterData,
         ];
         resolve(candlesWithAdditionalData);
       } catch (error) {
