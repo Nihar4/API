@@ -213,7 +213,8 @@ const getChartData = async (stock, range, id) => {
           currentDate.setDate(currentDate.getDate() + 1);
         }
 
-        let FilterData;
+        let FilterData = dataWithDates;
+
         if (range === "5Y" || range === "MAX") {
           FilterData = dataWithDates.filter(
             (data, index) => index % 7 === 0
@@ -226,7 +227,7 @@ const getChartData = async (stock, range, id) => {
         if (FilterData[FilterData.length - 1] !== lastElement) {
           FilterData.push(lastElement);
         }
-        // console.log(candlesWithoutAdjClose[candlesWithoutAdjClose.length - 1])
+        // console.log(dataWithDates[dataWithDates.length - 1], FilterData[FilterData.length - 1])
         const candlesWithAdditionalData = [
           ...candlesWithoutAdjClose,
           ...FilterData,
