@@ -1,3 +1,4 @@
+const { default: yahooFinance } = require("yahoo-finance2");
 const { ExecuteQuery } = require("../../../utils/ExecuteQuery");
 
 const UpdatePortfolio = async (data) => {
@@ -18,8 +19,33 @@ const UpdatePortfolio = async (data) => {
 
             const portfolioString = JSON.stringify({ ...data, data: portfolio });
 
+            const selectQuery = `SELECT * FROM portfolio_holdings WHERE strategy_id = ?`
+
+            const selectData = await ExecuteQuery(selectQuery, [strategy_id]);
+
+            if (selectData.length == 0) {
+                const InsertQuery = `
+                INSERT INTO portfolio_performance (
+                strategy_id, 
+                portfolio_value, 
+                index_value,
+                timestamp
+                ) VALUES (
+                ?, ?, ?, CONVERT_TZ(NOW(), '+00:00', '+05:30')
+                )
+            `;
+                const niftyValue = await yahooFinance.quote('^NSEI');
+                const InsertValues = [
+                    strategy_id,
+                    10000000,
+                    niftyValue.regularMarketPrice
+                ];
+                await ExecuteQuery(InsertQuery, InsertValues);
+
+            }
+
             const query = `
-        INSERT INTO swiftfoliosuk.portfolio_performance (
+        INSERT INTO portfolio_holdings (
           strategy_id, 
           portfolio, 
           portfolio_value, 

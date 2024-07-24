@@ -7,7 +7,7 @@ const { updateStockPrediction } = require('./updateStockPrediction');
 const getTotalInvestmentValue = async (results, id) => {
   const query = `
       SELECT *
-      FROM portfolio_performance
+      FROM portfolio_holdings
       WHERE strategy_id = ?
       ORDER BY timestamp DESC
       LIMIT 1

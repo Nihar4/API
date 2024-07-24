@@ -10,7 +10,7 @@ const GetPortfolio = async (id) => {
         try {
             const query = `
                 SELECT *
-                FROM portfolio_performance
+                FROM portfolio_holdings
                 WHERE strategy_id = ?
                 ORDER BY timestamp DESC
                 LIMIT 1
