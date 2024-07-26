@@ -154,12 +154,13 @@ const getDlData = async (req, res, next) => {
         .status(400)
         .json({ error: false, message: "ID is required for data." });
     }
-    const dl_data = await getAllData(id);
+    const { dl_data, isPending } = await getAllData(id);
 
     return res.json({
       error: false,
       message: "Data get successfully",
       data: dl_data,
+      isPending: isPending
     });
   } catch (error) {
     console.log(error);

@@ -16,9 +16,14 @@ const getAllData = async (id) => {
         `;
         const params = [id, id];
 
+        const query2 = `SELECT *
+            FROM dl_jobs 
+            WHERE strategy_id = ? AND status = 'Pending'`
+        const params2 = [id]
         try {
             const data = await ExecuteQuery(query, params);
-            resolve(data);
+            const data2 = await ExecuteQuery(query2, params2);
+            resolve({ dl_data: data, isPending: data2.length > 0 ? true : false });
         } catch (error) {
             reject(error);
         }
