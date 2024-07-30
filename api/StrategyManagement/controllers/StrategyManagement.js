@@ -13,12 +13,6 @@ const { getLongName } = require("../services/getLongName");
 const { updateWeights_asset } = require("../services/updateWeights_asset");
 const { GetScatterChartData } = require("../services/GetScatterChartData");
 const { updatePercentage_asset } = require("../services/updatePercentage_asset");
-const { GetPerformaceData } = require("../services/GetPerformaceData");
-const { GetFormattedStrategyData } = require("../services/GetFormattedStrategyData");
-const { GetPerformanceDataWorker } = require("../services/GetPerformanceDataWorker");
-const { UpdatePortfolio } = require("../services/UpdatePortfolio");
-const { GetPortfolio } = require("../services/GetPortfolio");
-const { GetPortfolioChart } = require("../services/GetPortfolioChart");
 
 const AddStrategyController = async (req, res, next) => {
   try {
@@ -391,81 +385,6 @@ const GetScatterChartDataController = async (req, res, next) => {
   }
 };
 
-// On Run Analysis
-const GetPerformanceDataController = async (req, res, next) => {
-  try {
-    const { id, email } = req.body;
-    const data = await GetStrategy(id);
-    const formattedData = GetFormattedStrategyData(data);
-    const result = await GetPerformaceData(formattedData, id);
-    // const result = await GetPerformanceDataWorker(formattedData, id);
-
-    return res.json({
-      error: false,
-      message: "Performance data get successfully",
-      data: { ...result, id },
-    });
-  } catch (error) {
-    console.log(error);
-    return res
-      .status(500)
-      .json({ error: true, message: "Internal server error." });
-  }
-};
-
-// save portfolio
-const UpdatePortfolioController = async (req, res, next) => {
-  try {
-    const data = req.body;
-    await UpdatePortfolio(data);
-    return res.json({
-      error: false,
-      message: "Portfolio data update successfully",
-    });
-  } catch (error) {
-    console.log(error);
-    return res
-      .status(500)
-      .json({ error: true, message: "Internal server error." });
-  }
-};
-
-// get portfolio
-const GetPortfolioController = async (req, res, next) => {
-  try {
-    const { id, email } = req.body;
-    const data = await GetPortfolio(id);
-
-    return res.json({
-      error: false,
-      message: "Performance data get successfully",
-      data: data,
-    });
-  } catch (error) {
-    console.log(error);
-    return res
-      .status(500)
-      .json({ error: true, message: "Internal server error." });
-  }
-}
-
-const GetPortfolioChartController = async (req, res, next) => {
-  try {
-    const { id, email } = req.body;
-    const data = await GetPortfolioChart(id);
-    return res.json({
-      error: false,
-      message: "Performance chart get successfully",
-      data: data,
-    });
-  } catch (error) {
-    console.log(error);
-    return res
-      .status(500)
-      .json({ error: true, message: "Internal server error." });
-  }
-}
-
 module.exports = {
   AddStrategyController,
   GetAllStrategiesController,
@@ -482,8 +401,4 @@ module.exports = {
   update_WeightsController_asset,
   GetScatterChartDataController,
   update_PercentageController_asset,
-  GetPerformanceDataController,
-  UpdatePortfolioController,
-  GetPortfolioController,
-  GetPortfolioChartController
 };

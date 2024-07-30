@@ -177,6 +177,7 @@ const getChartData = async (stock, range, id) => {
         const query = `SELECT * FROM swiftfoliosuk.dl_jobs WHERE \`strategy_id\`=${id} AND \`security\`= '${stock}'`;
         const result = await ExecuteQuery(query);
 
+
         result.sort(
           (a, b) => new Date(b.date_completed) - new Date(a.date_completed)
         );
@@ -184,7 +185,7 @@ const getChartData = async (stock, range, id) => {
 
         const latestOutputData = result[0].output_data;
 
-        const startDate = new Date();
+        const startDate = new Date(result[0].date_completed);
         startDate.setDate(startDate.getDate() + 1);
         const outputDataArray = latestOutputData.split(",");
 
@@ -199,18 +200,32 @@ const getChartData = async (stock, range, id) => {
 
         let len = dataChunks[0].length;
         // console.log(len,dataChunks.length);
-        const currentDate = new Date(startDate);
+        const date = new Date(startDate);
+        const currentDate = new Date();
         for (let i = 0; i < len; i++) {
-          dataWithDates.push({
-            date: currentDate.toISOString(),
-            close1: parseFloat(dataChunks[0][i]),
-            close2: parseFloat(dataChunks[1][i]),
-            close3: parseFloat(dataChunks[2][i]),
-            close4: parseFloat(dataChunks[3][i]),
-            close5: parseFloat(dataChunks[4][i]),
-            close6: parseFloat(dataChunks[5][i]),
-          });
-          currentDate.setDate(currentDate.getDate() + 1);
+          if (date >= startDate && date <= currentDate) {
+            const existingIndex = candlesWithoutAdjClose.findIndex(d => new Date(d.date).toISOString().split('T')[0] == date.toISOString().split('T')[0]);
+            if (existingIndex !== -1) {
+              candlesWithoutAdjClose[existingIndex].close1 = parseFloat(dataChunks[0][i]);
+              candlesWithoutAdjClose[existingIndex].close2 = parseFloat(dataChunks[1][i]);
+              candlesWithoutAdjClose[existingIndex].close3 = parseFloat(dataChunks[2][i]);
+              candlesWithoutAdjClose[existingIndex].close4 = parseFloat(dataChunks[3][i]);
+              candlesWithoutAdjClose[existingIndex].close5 = parseFloat(dataChunks[4][i]);
+              candlesWithoutAdjClose[existingIndex].close6 = parseFloat(dataChunks[5][i]);
+            }
+          }
+          else {
+            dataWithDates.push({
+              date: date.toISOString(),
+              close1: parseFloat(dataChunks[0][i]),
+              close2: parseFloat(dataChunks[1][i]),
+              close3: parseFloat(dataChunks[2][i]),
+              close4: parseFloat(dataChunks[3][i]),
+              close5: parseFloat(dataChunks[4][i]),
+              close6: parseFloat(dataChunks[5][i]),
+            });
+          }
+          date.setDate(date.getDate() + 1);
         }
 
         let FilterData = dataWithDates;
@@ -227,11 +242,13 @@ const getChartData = async (stock, range, id) => {
         if (FilterData[FilterData.length - 1] !== lastElement) {
           FilterData.push(lastElement);
         }
+        // console.log(FilterData)
         // console.log(dataWithDates[dataWithDates.length - 1], FilterData[FilterData.length - 1])
         const candlesWithAdditionalData = [
           ...candlesWithoutAdjClose,
           ...FilterData,
         ];
+        candlesWithAdditionalData.map((item) => item.date = new Date(item.date).toISOString().split('T')[0])
         resolve(candlesWithAdditionalData);
       } catch (error) {
         console.log(error);
