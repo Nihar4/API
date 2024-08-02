@@ -21,14 +21,6 @@ StrategyManagement.post("/updateWeights-asset", update_WeightsController_asset)
 StrategyManagement.post("/updatePercentage-asset", update_PercentageController_asset)
 StrategyManagement.post("/insertdldata-asset", GetScatterChartDataController)
 
-StrategyManagement.post("/getPortfolio", GetPortfolioController)
-StrategyManagement.post("/calculate-performance", GetPerformanceDataController)
-StrategyManagement.post("/update-portfolio", UpdatePortfolioController)
-StrategyManagement.post("/getPortfolio-Chart", GetPortfolioChartController)
-
-
-
-
 StrategyManagement.post("/insertEureka", AddStrategyController_Eureka)
 StrategyManagement.get("/getEureka", GetAllStrategiesController_Eureka)
 StrategyManagement.delete("/eureka", DeleteStrategyController_Eureka)
