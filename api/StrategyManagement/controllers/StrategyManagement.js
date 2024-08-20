@@ -13,6 +13,11 @@ const { getLongName } = require("../services/getLongName");
 const { updateWeights_asset } = require("../services/updateWeights_asset");
 const { GetScatterChartData } = require("../services/GetScatterChartData");
 const { updatePercentage_asset } = require("../services/updatePercentage_asset");
+const { getStrategyStockInfo } = require("../services/getStrategyStockInfo");
+const { GetAllPortfolioStrategies } = require("../services/GetAllPortfolioStrategies");
+const { GetPortfolioStrategy } = require("../services/GetPortfolioStrategy");
+const { DeletePortfolioStrategy } = require("../services/DeletePortfolioStrategy");
+const { InsertPortfolioStrategy } = require("../services/InsertPortfolioStrategy");
 
 const AddStrategyController = async (req, res, next) => {
   try {
@@ -385,6 +390,115 @@ const GetScatterChartDataController = async (req, res, next) => {
   }
 };
 
+const getStrategyStockInfoController = async (req, res, next) => {
+  try {
+    const { id } = req.query;
+    const result = await getStrategyStockInfo(id);
+
+    return res.json({
+      error: false,
+      message: "Data get successfully",
+      data: result,
+    });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ error: true, message: "Internal server error." });
+  }
+};
+
+const GetAllPortfolioStrategiesController = async (req, res, next) => {
+  try {
+    const { email } = req.query;
+    const strategies = await GetAllPortfolioStrategies(email);
+    return res.json({ error: false, data: strategies });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ error: true, message: "Internal server error." });
+  }
+};
+
+const GetPortfolioStrategyController = async (req, res, next) => {
+  try {
+    const { id } = req.query;
+    const strategies = await GetPortfolioStrategy(id);
+    // console.log(strategies);
+    const data = formatData(strategies);
+    return res.json({ error: false, data: data[0] });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ error: true, message: "Internal server error." });
+  }
+};
+
+const DeletePortfolioStrategyController = async (req, res, next) => {
+  try {
+    const { id } = req.body;
+    if (!id) {
+      return res
+        .status(400)
+        .json({ error: false, message: "ID is required for deletion." });
+    }
+    await DeletePortfolioStrategy(id);
+
+    return res.json({
+      error: false,
+      message: "Strategy deleted successfully.",
+    });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ error: true, message: "Internal server error." });
+  }
+};
+
+const AddPortfolioStrategyController = async (req, res, next) => {
+  try {
+    const { strategyName, description, assetClasses } = req.body;
+    const email = req.body.email_id;
+    const { strategy_id } = req.query;
+    const id = strategy_id ? strategy_id : Math.floor(Date.now() / 10);
+
+    if (!strategyName || !description) {
+      return res.status(400).json({
+        error: false,
+        message: "Strategy name and description are required.",
+      });
+    }
+    const insertPromises = [];
+    for (const assetClass of assetClasses) {
+      const { name: asset_class_name, underlyings } = assetClass;
+
+      for (const underlying of underlyings) {
+        const { stock, percentage } = underlying;
+        insertPromises.push(
+          InsertPortfolioStrategy(email, id, strategyName, description, asset_class_name, stock, percentage),
+          AddStocks(email, id, stock)
+        );
+      }
+    }
+
+    await Promise.all(insertPromises);
+
+    return res.json({
+      error: false,
+      message: "Strategy added successfully.",
+      data: id,
+    });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ error: true, message: "Internal server error." });
+  }
+};
+
 module.exports = {
   AddStrategyController,
   GetAllStrategiesController,
@@ -401,4 +515,9 @@ module.exports = {
   update_WeightsController_asset,
   GetScatterChartDataController,
   update_PercentageController_asset,
+  getStrategyStockInfoController,
+  GetAllPortfolioStrategiesController,
+  GetPortfolioStrategyController,
+  DeletePortfolioStrategyController,
+  AddPortfolioStrategyController
 };
