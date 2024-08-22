@@ -275,7 +275,7 @@ const getStrategyStockInfo = async (id) => {
                     const dl_stock_data = dlData.dl_data.find(dl => dl.security === asset.symbol);
 
                     if (dl_stock_data) {
-                        stockDetails.predict_percentage = dl_stock_data.predict_percentage;
+                        stockDetails.predict_percentage = parseFloat(dl_stock_data.predict_percentage).toFixed(4);
                     }
                     let current_qty = gainInfo.unrealised[gainInfo.unrealised.length - 1].total_buy_quantity;
                     let current_value = current_qty * stockDetails.regularMarketPrice;
