@@ -20,7 +20,7 @@ const { DeletePortfolioStrategy } = require("../services/DeletePortfolioStrategy
 const { InsertPortfolioStrategy } = require("../services/InsertPortfolioStrategy");
 const { GetPortfolioTrades } = require("../services/GetPortfolioTrades");
 const { GetPortfolioCash } = require("../services/GetPortfolioCash");
-const { updatePortfolioCash } = require("../services/UpdatePortfolioCash");
+const { updatePortfolioCash } = require("../services/updatePortfolioCash");
 
 const AddStrategyController = async (req, res, next) => {
   try {
