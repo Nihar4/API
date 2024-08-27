@@ -18,6 +18,9 @@ const { GetAllPortfolioStrategies } = require("../services/GetAllPortfolioStrate
 const { GetPortfolioStrategy } = require("../services/GetPortfolioStrategy");
 const { DeletePortfolioStrategy } = require("../services/DeletePortfolioStrategy");
 const { InsertPortfolioStrategy } = require("../services/InsertPortfolioStrategy");
+const { GetPortfolioTrades } = require("../services/GetPortfolioTrades");
+const { GetPortfolioCash } = require("../services/GetPortfolioCash");
+const { updatePortfolioCash } = require("../services/UpdatePortfolioCash");
 
 const AddStrategyController = async (req, res, next) => {
   try {
@@ -499,6 +502,47 @@ const AddPortfolioStrategyController = async (req, res, next) => {
   }
 };
 
+const GetPortfolioTradesController = async (req, res, next) => {
+  try {
+    const { id } = req.query;
+    const data = await GetPortfolioTrades(id);
+    return res.json({ error: false, data: data });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ error: true, message: "Internal server error." });
+  }
+};
+
+const GetPortfolioCashController = async (req, res, next) => {
+  try {
+    const { id } = req.query;
+    const data = await GetPortfolioCash(id);
+    return res.json({ error: false, data: data });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ error: true, message: "Internal server error." });
+  }
+};
+
+const UpdatePortfolioCashController = async (req, res, next) => {
+  try {
+    const { id, cash, email } = req.body;
+    const data = await updatePortfolioCash(id, cash, email);
+    return res.json({ error: false, data: data });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ error: true, message: "Internal server error." });
+  }
+};
+
+
+
 module.exports = {
   AddStrategyController,
   GetAllStrategiesController,
@@ -519,5 +563,8 @@ module.exports = {
   GetAllPortfolioStrategiesController,
   GetPortfolioStrategyController,
   DeletePortfolioStrategyController,
-  AddPortfolioStrategyController
+  AddPortfolioStrategyController,
+  GetPortfolioTradesController,
+  GetPortfolioCashController,
+  UpdatePortfolioCashController
 };

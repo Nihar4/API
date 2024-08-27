@@ -119,7 +119,7 @@ const getChartData = async (stock, range, id) => {
     } else {
       let calculatedStartDate = null;
 
-      const currentDate = new Date();
+      let currentDate = new Date();
       calculatedStartDate = new Date();
 
       switch (range.toUpperCase()) {
@@ -163,15 +163,42 @@ const getChartData = async (stock, range, id) => {
         interval: interval,
       });
 
-      const candlesWithoutAdjClose = historicalData.map((candle) => {
+      let candlesWithoutAdjClose = historicalData.map((candle) => {
         const { adjClose, ...candleWithoutAdjClose } = candle;
         return candleWithoutAdjClose;
       });
 
+      const lastCandle = candlesWithoutAdjClose[candlesWithoutAdjClose.length - 1];
+      const lastDate = new Date(lastCandle.date);
+      currentDate = new Date();
+      currentDate.setHours(0, 0, 0, 0);
+
+      const fillDataUpToCurrentDate = (candles, lastCandle, lastDate, currentDate) => {
+        const filledCandles = [...candles];
+        let dateToFill = new Date(lastDate);
+
+        while (dateToFill < currentDate) {
+          dateToFill.setDate(dateToFill.getDate() + 1);
+          const newCandle = { ...lastCandle, date: dateToFill.toISOString().split('T')[0] };
+          filledCandles.push(newCandle);
+        }
+
+        return filledCandles;
+      };
+
+      if (lastDate < currentDate) {
+        candlesWithoutAdjClose = fillDataUpToCurrentDate(candlesWithoutAdjClose, lastCandle, lastDate, currentDate);
+      }
 
       try {
         const query = `SELECT * FROM swiftfoliosuk.dl_jobs WHERE \`strategy_id\`=${id} AND \`security\`= '${stock}'`;
         const result = await ExecuteQuery(query);
+
+        result.forEach((item) => {
+          const originalDate = new Date(item.date_completed);
+          const adjustedDate = new Date(originalDate.getTime() + 5 * 60 * 60 * 1000 + 30 * 60 * 1000);
+          item.date_completed = adjustedDate.toISOString();
+        });
 
         result.sort(
           (a, b) => new Date(b.date_completed) - new Date(a.date_completed)
@@ -182,16 +209,15 @@ const getChartData = async (stock, range, id) => {
         let finalHistoricData = candlesWithoutAdjClose;
         if (range === "5Y" || range === "MAX") {
           const filterDate = new Date(result[0].date_completed);
-          filterDate.setHours(5, 30, 0, 0);
+          filterDate.setHours(0, 0, 0, 0);
           const filteredData = candlesWithoutAdjClose.filter((candle) => new Date(candle.date) >= filterDate);
           const everySeventhData = candlesWithoutAdjClose.filter((candle, index) => index % 7 === 0 && new Date(candle.date) < filterDate);
-
           finalHistoricData = [...everySeventhData, ...filteredData]
         }
 
         const startDate = new Date(result[0].date_completed);
         startDate.setDate(startDate.getDate() + 1);
-        startDate.setHours(5, 30, 0, 0);
+        startDate.setHours(0, 0, 0, 0);
         const outputDataArray = latestOutputData.split(",");
 
         const dataChunks = [];
