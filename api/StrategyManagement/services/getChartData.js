@@ -173,6 +173,12 @@ const getChartData = async (stock, range, id) => {
         const query = `SELECT * FROM swiftfoliosuk.dl_jobs WHERE \`strategy_id\`=${id} AND \`security\`= '${stock}'`;
         const result = await ExecuteQuery(query);
 
+        result.forEach((item) => {
+          const originalDate = new Date(item.date_completed);
+          const adjustedDate = new Date(originalDate.getTime() + 5 * 60 * 60 * 1000 + 30 * 60 * 1000);
+          item.date_completed = adjustedDate.toISOString();
+        });
+
         result.sort(
           (a, b) => new Date(b.date_completed) - new Date(a.date_completed)
         );
@@ -182,16 +188,16 @@ const getChartData = async (stock, range, id) => {
         let finalHistoricData = candlesWithoutAdjClose;
         if (range === "5Y" || range === "MAX") {
           const filterDate = new Date(result[0].date_completed);
-          filterDate.setHours(5, 30, 0, 0);
+          console.log(filterDate)
+          filterDate.setHours(0, 0, 0, 0);
           const filteredData = candlesWithoutAdjClose.filter((candle) => new Date(candle.date) >= filterDate);
           const everySeventhData = candlesWithoutAdjClose.filter((candle, index) => index % 7 === 0 && new Date(candle.date) < filterDate);
-
           finalHistoricData = [...everySeventhData, ...filteredData]
         }
 
         const startDate = new Date(result[0].date_completed);
         startDate.setDate(startDate.getDate() + 1);
-        startDate.setHours(5, 30, 0, 0);
+        startDate.setHours(0, 0, 0, 0);
         const outputDataArray = latestOutputData.split(",");
 
         const dataChunks = [];

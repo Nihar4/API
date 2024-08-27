@@ -138,7 +138,7 @@ const insertDlData = async (stock, id) => {
       avg_corr = sum / result.length;
       avg_percentage =
         average_randomData[average_randomData.length - 1] /
-          data.adjCloseArray[data.adjCloseArray.length - 1] -
+        data.adjCloseArray[data.adjCloseArray.length - 1] -
         1;
       // console.log("avg")
       // console.log(average_randomData, avg_corr, avg_percentage);
