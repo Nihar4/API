@@ -119,7 +119,7 @@ const getChartData = async (stock, range, id) => {
     } else {
       let calculatedStartDate = null;
 
-      const currentDate = new Date();
+      let currentDate = new Date();
       calculatedStartDate = new Date();
 
       switch (range.toUpperCase()) {
@@ -163,11 +163,32 @@ const getChartData = async (stock, range, id) => {
         interval: interval,
       });
 
-      const candlesWithoutAdjClose = historicalData.map((candle) => {
+      let candlesWithoutAdjClose = historicalData.map((candle) => {
         const { adjClose, ...candleWithoutAdjClose } = candle;
         return candleWithoutAdjClose;
       });
 
+      const lastCandle = candlesWithoutAdjClose[candlesWithoutAdjClose.length - 1];
+      const lastDate = new Date(lastCandle.date);
+      currentDate = new Date();
+      currentDate.setHours(0, 0, 0, 0);
+
+      const fillDataUpToCurrentDate = (candles, lastCandle, lastDate, currentDate) => {
+        const filledCandles = [...candles];
+        let dateToFill = new Date(lastDate);
+
+        while (dateToFill < currentDate) {
+          dateToFill.setDate(dateToFill.getDate() + 1);
+          const newCandle = { ...lastCandle, date: dateToFill.toISOString().split('T')[0] };
+          filledCandles.push(newCandle);
+        }
+
+        return filledCandles;
+      };
+
+      if (lastDate < currentDate) {
+        candlesWithoutAdjClose = fillDataUpToCurrentDate(candlesWithoutAdjClose, lastCandle, lastDate, currentDate);
+      }
 
       try {
         const query = `SELECT * FROM swiftfoliosuk.dl_jobs WHERE \`strategy_id\`=${id} AND \`security\`= '${stock}'`;
@@ -188,7 +209,6 @@ const getChartData = async (stock, range, id) => {
         let finalHistoricData = candlesWithoutAdjClose;
         if (range === "5Y" || range === "MAX") {
           const filterDate = new Date(result[0].date_completed);
-          console.log(filterDate)
           filterDate.setHours(0, 0, 0, 0);
           const filteredData = candlesWithoutAdjClose.filter((candle) => new Date(candle.date) >= filterDate);
           const everySeventhData = candlesWithoutAdjClose.filter((candle, index) => index % 7 === 0 && new Date(candle.date) < filterDate);
