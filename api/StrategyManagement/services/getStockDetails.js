@@ -52,11 +52,13 @@ const getStockDetails = async (stock) => {
           1
         );
 
-        let lastMonthDate = new Date(
-          curr.getFullYear(),
-          curr.getMonth(),
-          1
-        ).toISOString().split("T")[0];
+        // let lastMonthDate = new Date(
+        //   curr.getFullYear(),
+        //   curr.getMonth(),
+        //   1
+        // ).toISOString().split("T")[0];
+
+        let lastMonthDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0).toISOString().split("T")[0];
 
         const queryOptions = { period1: calculatedStartDate.toISOString() };
 

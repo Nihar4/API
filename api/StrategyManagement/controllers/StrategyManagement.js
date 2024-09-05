@@ -21,11 +21,15 @@ const { InsertPortfolioStrategy } = require("../services/InsertPortfolioStrategy
 const { GetPortfolioTrades } = require("../services/GetPortfolioTrades");
 const { GetPortfolioCash } = require("../services/GetPortfolioCash");
 const { updatePortfolioCash } = require("../services/updatePortfolioCash");
+const { DeletePortfolioTrades } = require("../services/DeletePortfolioTrades");
+const { InsertPortfolioTrades } = require("../services/InsertPortfolioTrades");
+const { UpdatePortfolioTrades } = require("../services/UpdatePortfolioTrades");
 
 const AddStrategyController = async (req, res, next) => {
   try {
     const { strategyName, description, assetClasses } = req.body;
     const email = req.body.email_id;
+    const run = req.body.run;
     const { strategy_id } = req.query;
     const id = strategy_id ? strategy_id : Math.floor(Date.now() / 10);
 
@@ -50,7 +54,7 @@ const AddStrategyController = async (req, res, next) => {
           stock,
           percentage
         );
-        await AddStocks(email, id, stock);
+        if (run) await AddStocks(email, id, stock);
       }
     }
 
@@ -68,7 +72,6 @@ const AddStrategyController = async (req, res, next) => {
 };
 
 const formatData = (data) => {
-  // console.log(data)
   if (data.length === 0) {
     return [{ strategyName: "", description: "", assetClasses: [] }];
   }
@@ -466,6 +469,7 @@ const AddPortfolioStrategyController = async (req, res, next) => {
     const { strategyName, description, assetClasses } = req.body;
     const email = req.body.email_id;
     const { strategy_id } = req.query;
+    const run = req.body.run;
     const id = strategy_id ? strategy_id : Math.floor(Date.now() / 10);
 
     if (!strategyName || !description) {
@@ -481,9 +485,13 @@ const AddPortfolioStrategyController = async (req, res, next) => {
       for (const underlying of underlyings) {
         const { stock, percentage } = underlying;
         insertPromises.push(
-          InsertPortfolioStrategy(email, id, strategyName, description, asset_class_name, stock, percentage),
-          AddStocks(email, id, stock)
+          InsertPortfolioStrategy(email, id, strategyName, description, asset_class_name, stock, percentage)
         );
+
+        if (run) {
+          insertPromises.push(AddStocks(email, id, stock));
+        }
+
       }
     }
 
@@ -507,6 +515,49 @@ const GetPortfolioTradesController = async (req, res, next) => {
     const { id } = req.query;
     const data = await GetPortfolioTrades(id);
     return res.json({ error: false, data: data });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ error: true, message: "Internal server error." });
+  }
+};
+
+const DeletePortfolioTradesController = async (req, res, next) => {
+  try {
+    const { id } = req.query;
+    const data = req.body;
+    await DeletePortfolioTrades(id, data);
+    return res.json({ error: false });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ error: true, message: "Internal server error." });
+  }
+};
+
+const InsertPortfolioTradesController = async (req, res, next) => {
+  try {
+    const { id, email } = req.query;
+    const data = req.body;
+    const modifiedData = data.slice(1);
+    const response = await InsertPortfolioTrades(id, email, modifiedData);
+    return res.json({ error: response.error, message: response.msg });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ error: true, message: "Internal server error." });
+  }
+};
+
+const UpdatePortfolioTradesController = async (req, res, next) => {
+  try {
+    const { id } = req.query;
+    const data = req.body;
+    await UpdatePortfolioTrades(id, data);
+    return res.json({ error: false });
   } catch (error) {
     console.log(error);
     return res
@@ -566,5 +617,8 @@ module.exports = {
   AddPortfolioStrategyController,
   GetPortfolioTradesController,
   GetPortfolioCashController,
-  UpdatePortfolioCashController
+  UpdatePortfolioCashController,
+  DeletePortfolioTradesController,
+  InsertPortfolioTradesController,
+  UpdatePortfolioTradesController
 };
