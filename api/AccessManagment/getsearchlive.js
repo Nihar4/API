@@ -1,5 +1,5 @@
 const { ExecuteQuery } = require("../../utils/ExecuteQuery");
-const yahooFinance = require("yahoo-finance2").default;
+const { fetchSearch } = require("../../utils/YahooFinanceApi");
 
 const getsearchlive = async (req, res, next) => {
   try {
@@ -17,7 +17,7 @@ const getsearchlive = async (req, res, next) => {
     }
 
     const query = `${search}`;
-    const results = await yahooFinance.search(query);
+    const results = await fetchSearch(query);
     const filteredResults = results.quotes.filter(
       (item) => item.isYahooFinance !== false
     );
@@ -26,7 +26,7 @@ const getsearchlive = async (req, res, next) => {
     const db_result = await ExecuteQuery(db_query);
     const transformedArray = db_result.map((item) => {
       const decodedField = decodeURIComponent(item.Field);
-      const symbol = decodedField.split("_").pop()+".EH";
+      const symbol = decodedField.split("_").pop() + ".EH";
       let longname = decodedField;
       if (decodedField.includes("_")) {
         longname = decodedField.substring(0, decodedField.lastIndexOf("_")).replace(/_/g, " ");

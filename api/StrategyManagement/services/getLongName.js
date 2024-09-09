@@ -1,5 +1,5 @@
 const { ExecuteQuery } = require("../../../utils/ExecuteQuery");
-const yahooFinance = require("yahoo-finance2").default;
+const { fetchQuoteData } = require("../../../utils/YahooFinanceApi");
 
 const getLongName = async (stock) => {
   return new Promise(async (resolve, reject) => {
@@ -11,8 +11,8 @@ const getLongName = async (stock) => {
       stock_name = columnName
         .substring(0, columnName.lastIndexOf("_"))
         .replace(/_/g, " ");
-      
-      const longname = stock_name ? stock_name:stock.split(".")[0];
+
+      const longname = stock_name ? stock_name : stock.split(".")[0];
 
       resolve({
         longname
@@ -21,15 +21,15 @@ const getLongName = async (stock) => {
     } else {
       let results;
       try {
-        
-         results = await yahooFinance.quote(stock);
+
+        results = await fetchQuoteData(stock);
       } catch (error) {
         console.log(error);
       }
-        // resolve(results);
-        // return;
-        const longname = results.longName ? results.longName : results.shortName;
-        resolve({longname})
+      // resolve(results);
+      // return;
+      const longname = results.longName ? results.longName : results.shortName;
+      resolve({ longname })
     }
   });
 };

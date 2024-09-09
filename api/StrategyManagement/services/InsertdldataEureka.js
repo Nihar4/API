@@ -1,5 +1,4 @@
 const { ExecuteQuery } = require("../../../utils/ExecuteQuery");
-const yahooFinance = require("yahoo-finance2").default;
 const stat = require("simple-statistics");
 const fs = require("fs");
 // const { PCA } = require("ml-pca");
@@ -107,7 +106,7 @@ const InsertdldataEureka = async (id, data) => {
         min_weight.push(parseFloat(data[value][0]) / 100);
         max_weight.push(parseFloat(data[value][1]) / 100);
       }
-      console.log(min_weight,max_weight);
+      console.log(min_weight, max_weight);
 
       // const x = PortfolioAllocation.meanVarianceEfficientFrontierPortfolios(stock_data.predicted_change_array,mat);
       const x = PortfolioAllocation.meanVarianceEfficientFrontierPortfolios(
@@ -128,13 +127,13 @@ const InsertdldataEureka = async (id, data) => {
         (obj) => JSON.stringify(obj) === JSON.stringify(response_data[0])
       );
 
-      if (allEqual) {   
-        resolve(response_data.slice(0,2));
+      if (allEqual) {
+        resolve(response_data.slice(0, 2));
       }
-      else{ 
+      else {
         resolve(response_data);
       }
-   
+
       // resolve([]);
     } catch (error) {
       console.log(error);

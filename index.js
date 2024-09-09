@@ -3,7 +3,6 @@ const routes = require("./routes/index.js");
 const express = require('express');
 const cors = require('cors')
 const { connectDB } = require("./connection/index.js");
-const { default: yahooFinance } = require("yahoo-finance2");
 
 const app = express();
 connectDB();

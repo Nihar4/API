@@ -1,5 +1,5 @@
 const { ExecuteQuery } = require("../../../utils/ExecuteQuery");
-const yahooFinance = require("yahoo-finance2").default;
+const { fetchHistoricalData } = require("../../../utils/YahooFinanceApi");
 
 const validateStock = async (stock) => {
   return new Promise(async (resolve, reject) => {
@@ -30,7 +30,7 @@ const validateStock = async (stock) => {
       let symbolToPass = stock;
       const finalEndDate = new Date().getTime() / 1000;
 
-      const historicalData = await yahooFinance.historical(symbolToPass, {
+      const historicalData = await fetchHistoricalData(symbolToPass, {
         period1: calculatedStartDate,
         period2: finalEndDate,
       });

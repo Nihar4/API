@@ -1,6 +1,5 @@
 const { ExecuteQuery } = require("../../utils/ExecuteQuery");
-
-const yahooFinance = require("yahoo-finance2").default;
+const { fetchHistoricalData } = require("../../utils/YahooFinanceApi");
 
 const checkAndAddCodeColumn = async (stock) => {
   const checkColumnQuery = `SHOW COLUMNS FROM security_price LIKE '${stock}'`;
@@ -39,7 +38,7 @@ const checkAndAddCodeColumn = async (stock) => {
     // console.log(dateResult[0]);
 
     const queryOptions = { period1: "2019-01-01" /* ... */ };
-    let stockDetails = await yahooFinance.historical(
+    let stockDetails = await fetchHistoricalData(
       `${stock}.L`,
       queryOptions
     );

@@ -1,6 +1,6 @@
-const { default: yahooFinance } = require("yahoo-finance2");
 const { ExecuteQuery } = require("../../../utils/ExecuteQuery");
 const { isEmpty } = require("../../../utils/Validation");
+const { fetchQuoteData } = require("../../../utils/YahooFinanceApi");
 
 const GetTradeIRN = async () => {
 
@@ -69,7 +69,7 @@ const validateTradeData = async (data) => {
         }
         symbols.push(symbolData);
     }
-    const yahooData = await yahooFinance.quote(symbols);
+    const yahooData = await fetchQuoteData(symbols);
     for (let i = 0; i < symbols.length; i = i + 1) {
         if (isEmpty(yahooData[i])) {
             return { isValid: false, error: `Invalid symbol: ${symbols[i]}` };

@@ -1,5 +1,4 @@
 const { parentPort, workerData } = require('worker_threads');
-const yahooFinance = require("yahoo-finance2").default;
 const stat = require("simple-statistics");
 
 const processData = async (stock, stockData) => {

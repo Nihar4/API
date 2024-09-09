@@ -1,5 +1,4 @@
 const { ExecuteQuery } = require("../../../utils/ExecuteQuery");
-const yahooFinance = require("yahoo-finance2").default;
 const stat = require("simple-statistics");
 const fs = require("fs");
 // const { PCA } = require("ml-pca");
@@ -7,6 +6,7 @@ const dataset = require("ml-dataset-iris").getNumbers();
 const PCA = require("pca-js");
 var cov = require("compute-covariance");
 var PortfolioAllocation = require("portfolio-allocation");
+const { fetchHistoricalData } = require("../../../utils/YahooFinanceApi");
 
 const getData = async (id) => {
   const query = `SELECT stock FROM strategy WHERE id = ${id}`;
@@ -46,7 +46,7 @@ const getData = async (id) => {
         interval: "1mo",
       };
 
-      let stockDetails = await yahooFinance.historical(
+      let stockDetails = await fetchHistoricalData(
         `${stock_no}`,
         queryOptions
       );
@@ -129,8 +129,8 @@ const GetScatterChartData = async (id, data) => {
       for (const value of stock_array) {
         // console.log(value,data[value][0]);
         if (data[value]) {
-          min_weight.push(parseFloat(data[value][0])/100);
-          max_weight.push(parseFloat(data[value][1])/100);
+          min_weight.push(parseFloat(data[value][0]) / 100);
+          max_weight.push(parseFloat(data[value][1]) / 100);
         }
       }
       // console.log( stock_data.predicted_change_array);

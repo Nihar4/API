@@ -24,6 +24,8 @@ const { updatePortfolioCash } = require("../services/updatePortfolioCash");
 const { DeletePortfolioTrades } = require("../services/DeletePortfolioTrades");
 const { InsertPortfolioTrades } = require("../services/InsertPortfolioTrades");
 const { UpdatePortfolioTrades } = require("../services/UpdatePortfolioTrades");
+const { ProcessPortfolioTrades } = require("../services/ProcessPortfolioTrades");
+const { BulkUpdatePortfolioTrades } = require("../services/BulkUpdatePortfolioTrades");
 
 const AddStrategyController = async (req, res, next) => {
   try {
@@ -304,6 +306,7 @@ const jobqueue = async (req, res, next) => {
 
 const getJobQueue = async (req, res, next) => {
   try {
+    console.time("time")
     const { email_id } = req.query;
     if (!email_id) {
       return res
@@ -311,6 +314,8 @@ const getJobQueue = async (req, res, next) => {
         .json({ error: false, message: "Email id  is required for data." });
     }
     const dl_data = await getjobqueue(email_id);
+    console.timeEnd("time")
+
 
     return res.status(200).json({
       error: false,
@@ -541,7 +546,7 @@ const InsertPortfolioTradesController = async (req, res, next) => {
   try {
     const { id, email } = req.query;
     const data = req.body;
-    const modifiedData = data.slice(1);
+    const modifiedData = data.slice(1).filter(row => row.length > 0);
     const response = await InsertPortfolioTrades(id, email, modifiedData);
     return res.json({ error: response.error, message: response.msg });
   } catch (error) {
@@ -592,7 +597,34 @@ const UpdatePortfolioCashController = async (req, res, next) => {
   }
 };
 
+const ProcessPortfolioTradesController = async (req, res, next) => {
+  try {
+    const { id, email, qty } = req.body;
+    console.log(id, email, qty);
+    const response = await ProcessPortfolioTrades(id, email, qty);
+    return res.json({ error: response.error, message: response.msg });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ error: true, message: "Internal server error." });
+  }
+};
 
+const BulkUpdatePortfolioTradesController = async (req, res, next) => {
+  try {
+    const { id, email } = req.query;
+    const data = req.body;
+    const modifiedData = data.slice(1).filter(row => row.length > 0);
+    const response = await BulkUpdatePortfolioTrades(id, email, modifiedData);
+    return res.json({ error: response.error, message: response.msg });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ error: true, message: "Internal server error." });
+  }
+};
 
 module.exports = {
   AddStrategyController,
@@ -620,5 +652,7 @@ module.exports = {
   UpdatePortfolioCashController,
   DeletePortfolioTradesController,
   InsertPortfolioTradesController,
-  UpdatePortfolioTradesController
+  UpdatePortfolioTradesController,
+  ProcessPortfolioTradesController,
+  BulkUpdatePortfolioTradesController
 };

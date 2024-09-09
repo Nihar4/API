@@ -1,5 +1,5 @@
-const yahooFinance = require("yahoo-finance2").default;
 const axios = require("axios");
+const { fetchHistoricalData } = require("../../utils/YahooFinanceApi");
 
 const gethistoricaldata = async (req, res, next) => {
   try {
@@ -80,7 +80,7 @@ const gethistoricaldata = async (req, res, next) => {
         symbolToPass = bse_symbol + ".BO";
       }
 
-      const historicalData = await yahooFinance.historical(symbolToPass, {
+      const historicalData = await fetchHistoricalData(symbolToPass, {
         period1: finalStartDate,
         period2: finalEndDate,
       });

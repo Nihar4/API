@@ -1,5 +1,5 @@
 const { ExecuteQuery } = require("../../../utils/ExecuteQuery");
-const yahooFinance = require("yahoo-finance2").default;
+const { fetchHistoricalData, fetchQuoteData } = require("../../../utils/YahooFinanceApi");
 
 const getStockDetails = async (stock) => {
   return new Promise(async (resolve, reject) => {
@@ -64,7 +64,7 @@ const getStockDetails = async (stock) => {
 
         let stockDetails;
         try {
-          stockDetails = await yahooFinance.historical(stock, queryOptions);
+          stockDetails = await fetchHistoricalData(stock, queryOptions);
         } catch (error) {
           reject(new Error(`Failed to fetch historical data for ${stock}: ${error.message}`));
           return;
@@ -98,7 +98,7 @@ const getStockDetails = async (stock) => {
 
         let result;
         try {
-          result = await yahooFinance.quote(stock);
+          result = await fetchQuoteData(stock);
         } catch (error) {
           reject(new Error(`Failed to fetch quote data for ${stock}: ${error.message}`));
           return;

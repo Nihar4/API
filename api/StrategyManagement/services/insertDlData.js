@@ -1,13 +1,13 @@
 
 const { ExecuteQuery } = require("../../../utils/ExecuteQuery");
-const yahooFinance = require("yahoo-finance2").default;
 const stat = require("simple-statistics");
 const fs = require("fs");
+const { fetchHistoricalData } = require("../../../utils/YahooFinanceApi");
 
 const getData = async (stock) => {
   const queryOptions = { period1: "1970-01-01" /* ... */ };
 
-  let stockDetails = await yahooFinance.historical(`${stock}`, queryOptions);
+  let stockDetails = await fetchHistoricalData(`${stock}`, queryOptions);
   // console.log(stockDetails);
 
   const adjCloseArray = stockDetails.map((stockDetail) => stockDetail.adjClose);

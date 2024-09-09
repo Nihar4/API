@@ -13,7 +13,7 @@ function FormatNumber(number, precision = 2) {
 function CalculateCapitalGains(stock_code, data, currentPrice) {
 
     data = data.map((d) => {
-        return { ...d, quantity: parseInt(d.quantity), price: parseFloat(d.netprice) }
+        return { ...d, quantity: parseInt(d.quantity), price: parseFloat(d.netprice || d.tentativeprice) }
     });
 
     let sellData = data.filter((d) => { return d.type === 'Sell' });
