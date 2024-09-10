@@ -22,20 +22,83 @@ function getCachedData(key) {
 function fetchChartData(symbol, queryOptions) {
     return new Promise(async (resolve, reject) => {
         try {
-            const historicalData = await yahooFinance.chart(symbol, queryOptions);
-            if (!historicalData || !historicalData.quotes) {
-                return resolve(null);
+            let historicalData = await yahooFinance.chart(symbol, queryOptions);
+
+            if (!historicalData || !historicalData.quotes || historicalData.quotes.length === 0) {
+                const alternativeSymbol = symbol.endsWith('.NS')
+                    ? symbol.replace('.NS', '.BO')
+                    : symbol.endsWith('.BO') ? symbol.replace('.BO', '.NS') : symbol;
+
+                console.log(`Retrying with alternative symbol: ${alternativeSymbol}`);
+                historicalData = await yahooFinance.chart(alternativeSymbol, queryOptions);
             }
 
-            const Data = historicalData.quotes.map(({ adjclose, ...rest }) => ({
+            if (!historicalData || !historicalData.quotes || historicalData.quotes.length === 0) {
+                return resolve(null);
+            }
+            let Data = historicalData.quotes.map(({ adjclose, ...rest }) => ({
                 ...rest,
                 adjClose: adjclose,
             }));
 
+            let previousValidRow = null;
+            Data = Data.map(row => {
+                if (row.adjClose === null || Object.values(row).some(val => val === null)) {
+                    if (previousValidRow !== null) {
+                        return {
+                            ...previousValidRow,
+                            date: row.date
+                        };
+                    }
+                } else {
+                    previousValidRow = row;
+                }
+                return row;
+            });
+
             resolve(Data);
+
         } catch (error) {
             console.log("Error fetching chart data:", error);
-            reject(error);
+
+            const alternativeSymbol = symbol.endsWith('.NS')
+                ? symbol.replace('.NS', '.BO')
+                : symbol.endsWith('.BO') ? symbol.replace('.BO', '.NS') : symbol;
+
+            try {
+                console.log(`Retrying with alternative symbol: ${alternativeSymbol}`);
+                const historicalData = await yahooFinance.chart(alternativeSymbol, queryOptions);
+
+                if (!historicalData || !historicalData.quotes || historicalData.quotes.length === 0) {
+                    return resolve(null);
+                }
+
+                let Data = historicalData.quotes.map(({ adjclose, ...rest }) => ({
+                    ...rest,
+                    adjClose: adjclose,
+                }));
+
+                let previousValidRow = null;
+                Data = Data.map(row => {
+                    if (row.adjClose === null || Object.values(row).some(val => val === null)) {
+                        if (previousValidRow !== null) {
+                            return {
+                                ...previousValidRow,
+                                date: row.date
+                            };
+                        }
+                    } else {
+                        previousValidRow = row;
+                    }
+                    return row;
+                });
+
+                resolve(Data);
+
+            } catch (retryError) {
+                console.log("Error fetching chart data with alternative symbol:", retryError);
+                reject(retryError);
+            }
         }
     });
 }
