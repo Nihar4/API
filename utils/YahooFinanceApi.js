@@ -55,9 +55,7 @@ function fetchChartData(symbol, queryOptions) {
                 }
                 return row;
             });
-
             resolve(Data);
-
         } catch (error) {
             console.log("Error fetching chart data:", error);
 
@@ -70,7 +68,7 @@ function fetchChartData(symbol, queryOptions) {
                 const historicalData = await yahooFinance.chart(alternativeSymbol, queryOptions);
 
                 if (!historicalData || !historicalData.quotes || historicalData.quotes.length === 0) {
-                    return resolve(null);
+                    return resolve(null)
                 }
 
                 let Data = historicalData.quotes.map(({ adjclose, ...rest }) => ({
@@ -92,12 +90,10 @@ function fetchChartData(symbol, queryOptions) {
                     }
                     return row;
                 });
-
                 resolve(Data);
-
             } catch (retryError) {
                 console.log("Error fetching chart data with alternative symbol:", retryError);
-                reject(retryError);
+                return resolve(null)
             }
         }
     });
@@ -120,8 +116,13 @@ function fetchHistoricalData(symbol, queryOptions) {
             resolve(historicalData);
         } catch (error) {
             const Data = await fetchChartData(symbol, queryOptions);
-            cacheData(cacheKey, Data);
-            resolve(Data);
+            if (Data) {
+                cacheData(cacheKey, Data);
+                resolve(Data);
+            }
+            else {
+                reject({ error: true, msg: "API Down" });
+            }
         }
     });
 }
@@ -138,7 +139,7 @@ function fetchQuoteData(symbol) {
             resolve(Data);
         } catch (error) {
             console.log("Error fetching quote data:", error);
-            reject(error);
+            reject({ error: true, msg: error });
         }
     });
 }

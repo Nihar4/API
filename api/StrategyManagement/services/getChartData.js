@@ -117,80 +117,81 @@ const getChartData = async (stock, range, id) => {
         console.log(error);
       }
     } else {
-      let calculatedStartDate = null;
+      try {
+        let calculatedStartDate = null;
 
-      let currentDate = new Date();
-      calculatedStartDate = new Date();
+        let currentDate = new Date();
+        calculatedStartDate = new Date();
 
-      switch (range.toUpperCase()) {
-        case "1M":
-          calculatedStartDate.setMonth(currentDate.getMonth() - 1);
-          break;
-        case "3M":
-          calculatedStartDate.setMonth(currentDate.getMonth() - 3);
-          break;
-        case "6M":
-          calculatedStartDate.setMonth(currentDate.getMonth() - 6);
-          break;
-        case "YTD":
-          calculatedStartDate = new Date(currentDate.getFullYear() - 1, 11, 31);
-          break;
-        case "1Y":
-          calculatedStartDate.setFullYear(currentDate.getFullYear() - 1);
-          break;
-        case "5Y":
-          calculatedStartDate.setFullYear(currentDate.getFullYear() - 5);
-          break;
-        case "MAX":
-          calculatedStartDate = new Date(1970, 0, 1);
-          break;
-        default:
-          break;
-      }
-      calculatedStartDate = calculatedStartDate.getTime() / 1000;
+        switch (range.toUpperCase()) {
+          case "1M":
+            calculatedStartDate.setMonth(currentDate.getMonth() - 1);
+            break;
+          case "3M":
+            calculatedStartDate.setMonth(currentDate.getMonth() - 3);
+            break;
+          case "6M":
+            calculatedStartDate.setMonth(currentDate.getMonth() - 6);
+            break;
+          case "YTD":
+            calculatedStartDate = new Date(currentDate.getFullYear() - 1, 11, 31);
+            break;
+          case "1Y":
+            calculatedStartDate.setFullYear(currentDate.getFullYear() - 1);
+            break;
+          case "5Y":
+            calculatedStartDate.setFullYear(currentDate.getFullYear() - 5);
+            break;
+          case "MAX":
+            calculatedStartDate = new Date(1970, 0, 1);
+            break;
+          default:
+            break;
+        }
+        calculatedStartDate = calculatedStartDate.getTime() / 1000;
 
-      const finalStartDate = calculatedStartDate;
-      const finalEndDate = new Date().getTime() / 1000;
-      let symbolToPass = stock;
-      let interval = "1d";
-      // if (range === "5Y" || range === "MAX") {
-      //   interval = "1d";
-      // }
+        const finalStartDate = calculatedStartDate;
+        const finalEndDate = new Date().getTime() / 1000;
+        let symbolToPass = stock;
+        let interval = "1d";
+        // if (range === "5Y" || range === "MAX") {
+        //   interval = "1d";
+        // }
 
-      const historicalData = await fetchHistoricalData(symbolToPass, {
-        period1: finalStartDate,
-        period2: finalEndDate,
-        interval: interval,
-      });
+        const historicalData = await fetchHistoricalData(symbolToPass, {
+          period1: finalStartDate,
+          period2: finalEndDate,
+          interval: interval,
+        });
 
-      let candlesWithoutAdjClose = historicalData.map((candle) => {
-        const { adjClose, ...candleWithoutAdjClose } = candle;
-        return candleWithoutAdjClose;
-      });
+        let candlesWithoutAdjClose = historicalData.map((candle) => {
+          const { adjClose, ...candleWithoutAdjClose } = candle;
+          return candleWithoutAdjClose;
+        });
 
-      const lastCandle = candlesWithoutAdjClose[candlesWithoutAdjClose.length - 1];
-      const lastDate = new Date(lastCandle.date);
-      currentDate = new Date();
-      currentDate.setHours(0, 0, 0, 0);
+        const lastCandle = candlesWithoutAdjClose[candlesWithoutAdjClose.length - 1];
+        const lastDate = new Date(lastCandle.date);
+        currentDate = new Date();
+        currentDate.setHours(0, 0, 0, 0);
 
-      const fillDataUpToCurrentDate = (candles, lastCandle, lastDate, currentDate) => {
-        const filledCandles = [...candles];
-        let dateToFill = new Date(lastDate);
+        const fillDataUpToCurrentDate = (candles, lastCandle, lastDate, currentDate) => {
+          const filledCandles = [...candles];
+          let dateToFill = new Date(lastDate);
 
-        while (dateToFill < currentDate) {
-          dateToFill.setDate(dateToFill.getDate() + 1);
-          const newCandle = { ...lastCandle, date: dateToFill.toISOString().split('T')[0] };
-          filledCandles.push(newCandle);
+          while (dateToFill < currentDate) {
+            dateToFill.setDate(dateToFill.getDate() + 1);
+            const newCandle = { ...lastCandle, date: dateToFill.toISOString().split('T')[0] };
+            filledCandles.push(newCandle);
+          }
+
+          return filledCandles;
+        };
+
+        if (lastDate < currentDate) {
+          candlesWithoutAdjClose = fillDataUpToCurrentDate(candlesWithoutAdjClose, lastCandle, lastDate, currentDate);
         }
 
-        return filledCandles;
-      };
 
-      if (lastDate < currentDate) {
-        candlesWithoutAdjClose = fillDataUpToCurrentDate(candlesWithoutAdjClose, lastCandle, lastDate, currentDate);
-      }
-
-      try {
         const query = `SELECT * FROM swiftfoliosuk.dl_jobs WHERE \`strategy_id\`=${id} AND \`security\`= '${stock}'`;
         const result = await ExecuteQuery(query);
 
@@ -231,7 +232,7 @@ const getChartData = async (stock, range, id) => {
         let len = dataChunks[0].length;
         // console.log(len,dataChunks.length);
         const date = new Date(startDate);
-        const currentDate = new Date();
+        currentDate = new Date();
         for (let i = 0; i < len; i++) {
           if (date >= startDate && date <= currentDate) {
             const existingIndex = finalHistoricData.findIndex(d => new Date(d.date).toISOString().split('T')[0] == date.toISOString().split('T')[0]);
@@ -280,6 +281,7 @@ const getChartData = async (stock, range, id) => {
         candlesWithAdditionalData.map((item) => item.date = new Date(item.date).toISOString().split('T')[0])
         resolve(candlesWithAdditionalData);
       } catch (error) {
+        reject(error);
         console.log(error);
       }
     }

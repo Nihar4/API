@@ -1,4 +1,5 @@
 const { ExecuteQuery } = require("../../../utils/ExecuteQuery");
+const { isEmpty } = require("../../../utils/Validation");
 const { fetchHistoricalData, fetchQuoteData } = require("../../../utils/YahooFinanceApi");
 
 const getStockDetails = async (stock) => {
@@ -39,6 +40,19 @@ const getStockDetails = async (stock) => {
           regularMarketChangePercent,
         });
       } else {
+        let result;
+        try {
+          result = await fetchQuoteData(stock);
+        } catch (error) {
+          console.log(error);
+        }
+
+        const detailed_name = result && result.longName ? result.longName : (result && result.shortName ? result.shortName : '--');
+        const regularMarketPrice = result ? result.regularMarketPrice : null;
+        const regularMarketChangePercent = result ? result.regularMarketChangePercent : null;
+
+        let percentage_change;
+
         let currentDate = new Date();
         let calculatedStartDate = new Date(
           currentDate.getFullYear(),
@@ -46,68 +60,45 @@ const getStockDetails = async (stock) => {
           1
         );
 
-        let curr = new Date(
-          currentDate.getFullYear(),
-          currentDate.getMonth() - 1,
-          1
-        );
-
-        // let lastMonthDate = new Date(
-        //   curr.getFullYear(),
-        //   curr.getMonth(),
-        //   1
-        // ).toISOString().split("T")[0];
-
         let lastMonthDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0).toISOString().split("T")[0];
-
         const queryOptions = { period1: calculatedStartDate.toISOString() };
 
         let stockDetails;
         try {
           stockDetails = await fetchHistoricalData(stock, queryOptions);
         } catch (error) {
-          reject(new Error(`Failed to fetch historical data for ${stock}: ${error.message}`));
-          return;
+          console.log(error);
         }
 
-        if (stockDetails.length === 0) {
-          reject(new Error("No historical data found for the stock"));
-          return;
+        if (!stockDetails || stockDetails.length === 0) {
+          console.log("No historical data found for the stock");
+          percentage_change = null;
         }
+        else {
+          const latestData = stockDetails[stockDetails.length - 1].adjClose;
+          let lastMonthData;
 
-        const latestData = stockDetails[stockDetails.length - 1].adjClose;
-        let lastMonthData;
+          const l = new Date(lastMonthDate);
 
-        const l = new Date(lastMonthDate);
-
-        while (1) {
-          const foundData = stockDetails.find(
-            (stockData) => stockData.date.toISOString().split("T")[0] === l.toISOString().split("T")[0]
-          );
-          if (foundData) {
-            lastMonthData = foundData.adjClose;
-            break;
+          while (1) {
+            const foundData = stockDetails.find(
+              (stockData) => stockData.date.toISOString().split("T")[0] === l.toISOString().split("T")[0]
+            );
+            if (foundData) {
+              lastMonthData = foundData.adjClose;
+              break;
+            }
+            l.setDate(l.getDate() - 1);
           }
-          l.setDate(l.getDate() - 1);
-        }
 
-        if (lastMonthData === undefined) {
-          reject(new Error("No data found for the last month"));
-          return;
+          if (!isEmpty(lastMonthData)) {
+            percentage_change = ((latestData / lastMonthData) - 1) * 100;
+          }
+          else {
+            console.log("No data found for the last month");
+            percentage_change = null;
+          }
         }
-
-        let result;
-        try {
-          result = await fetchQuoteData(stock);
-        } catch (error) {
-          reject(new Error(`Failed to fetch quote data for ${stock}: ${error.message}`));
-          return;
-        }
-
-        const detailed_name = result.longName ? result.longName : result.shortName;
-        const regularMarketPrice = result.regularMarketPrice;
-        const regularMarketChangePercent = result.regularMarketChangePercent;
-        const percentage_change = ((latestData / lastMonthData) - 1) * 100;
 
         resolve({
           percentage_change,
@@ -117,7 +108,13 @@ const getStockDetails = async (stock) => {
         });
       }
     } catch (error) {
-      reject(new Error(`Failed to get stock details for ${stock}: ${error.message}`));
+      console.log(`Failed to get stock details for ${stock}: ${error.message}`);
+      resolve({
+        percentage_change: null,
+        detailed_name: "--",
+        regularMarketPrice: null,
+        regularMarketChangePercent: null,
+      });
     }
   });
 };
