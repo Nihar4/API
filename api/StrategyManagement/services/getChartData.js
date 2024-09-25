@@ -1,7 +1,7 @@
 const { ExecuteQuery } = require("../../../utils/ExecuteQuery");
 const { fetchHistoricalData } = require("../../../utils/YahooFinanceApi");
 
-const getChartData = async (stock, range, id) => {
+const getChartData = async (stock, range, id, historicalOnly) => {
   return new Promise(async (resolve, reject) => {
     if ("EH" == stock.split(".")[1]) {
       const query = `SELECT column_name FROM information_schema.columns WHERE table_name = 'master_benchmarks_price' AND column_name LIKE '%${stock.split(".")[0]}'`;
@@ -158,6 +158,24 @@ const getChartData = async (stock, range, id) => {
         //   interval = "1d";
         // }
 
+        if (historicalOnly) {
+          console.log(stock, range, id, historicalOnly)
+          let interval = "1d";
+
+          if (range === "5Y" || range === "MAX") {
+            interval = "1wk";
+          }
+
+          const historicalData = await fetchHistoricalData(symbolToPass, {
+            period1: finalStartDate,
+            period2: finalEndDate,
+            interval: interval,
+          });
+
+          historicalData.map((item) => item.date = new Date(item.date).toISOString().split('T')[0])
+          return resolve(historicalData)
+        }
+
         const historicalData = await fetchHistoricalData(symbolToPass, {
           period1: finalStartDate,
           period2: finalEndDate,
@@ -190,7 +208,6 @@ const getChartData = async (stock, range, id) => {
         if (lastDate < currentDate) {
           candlesWithoutAdjClose = fillDataUpToCurrentDate(candlesWithoutAdjClose, lastCandle, lastDate, currentDate);
         }
-
 
         const query = `SELECT * FROM swiftfoliosuk.dl_jobs WHERE \`strategy_id\`=${id} AND \`security\`= '${stock}'`;
         const result = await ExecuteQuery(query);

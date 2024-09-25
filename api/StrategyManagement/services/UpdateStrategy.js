@@ -1,9 +1,9 @@
 const { ExecuteQuery } = require("../../../utils/ExecuteQuery");
 
-const DeleteStrategy = async (id) => {
+const UpdateStrategy = async (id, description) => {
     return new Promise(async (resolve, reject) => {
-        const query = 'DELETE FROM buckets WHERE id = ?';
-        const params = [id];
+        const query = 'UPDATE buckets SET description = ? WHERE id = ?';
+        const params = [description, id];
         try {
             const data = await ExecuteQuery(query, params);
             resolve(data);
@@ -13,4 +13,4 @@ const DeleteStrategy = async (id) => {
     });
 };
 
-module.exports = { DeleteStrategy };
+module.exports = { UpdateStrategy };

@@ -1,11 +1,11 @@
 const { ExecuteQuery } = require("../../../utils/ExecuteQuery");
 
-const InsertStrategy = async (email,id, strategyName, description, asset_class_name, stock, percentage) => {
+const InsertStrategy = async (email, id, name, description) => {
     return new Promise(async (resolve, reject) => {
 
 
-        const query = 'INSERT INTO strategy (email,id, name, description, asset_class_name, stock, percentage) VALUES (?,?, ?, ?, ?, ?, ?)';
-        const params = [email,id, strategyName, description, asset_class_name, stock, percentage];
+        const query = 'INSERT INTO buckets (email,id, name, description) VALUES (?,?, ?, ?)';
+        const params = [email, id, name, description];
 
         try {
             const data = await ExecuteQuery(query, params);

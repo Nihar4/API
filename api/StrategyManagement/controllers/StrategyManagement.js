@@ -26,43 +26,34 @@ const { InsertPortfolioTrades } = require("../services/InsertPortfolioTrades");
 const { UpdatePortfolioTrades } = require("../services/UpdatePortfolioTrades");
 const { ProcessPortfolioTrades } = require("../services/ProcessPortfolioTrades");
 const { BulkUpdatePortfolioTrades } = require("../services/BulkUpdatePortfolioTrades");
+const { getStrategyStocks } = require("../services/getStrategyStocks");
+const { UpdateStrategy } = require("../services/UpdateStrategy");
+const { InsertStock } = require("../services/InsertStock");
+const { DeleteStock } = require("../services/DeleteStock");
 
 const AddStrategyController = async (req, res, next) => {
   try {
-    const { strategyName, description, assetClasses } = req.body;
+    const { name, description, id } = req.body;
     const email = req.body.email_id;
-    const run = req.body.run;
-    const { strategy_id } = req.query;
-    const id = strategy_id ? strategy_id : Math.floor(Date.now() / 10);
+    const Id = id ? id : Math.floor(Date.now() / 10);
 
-    if (!strategyName || !description) {
+    if (!name || !description) {
       return res.status(400).json({
         error: false,
-        message: "Strategy name and description are required.",
+        message: "Bucket name and Description are required.",
       });
     }
 
-    for (const assetClass of assetClasses) {
-      const { name: asset_class_name, underlyings } = assetClass;
-
-      for (const underlying of underlyings) {
-        const { stock, percentage } = underlying;
-        await InsertStrategy(
-          email,
-          id,
-          strategyName,
-          description,
-          asset_class_name,
-          stock,
-          percentage
-        );
-        if (run) await AddStocks(email, id, stock);
-      }
-    }
+    await InsertStrategy(
+      email,
+      Id,
+      name,
+      description
+    );
 
     return res.json({
       error: false,
-      message: "Strategy added successfully.",
+      message: "Bucket added successfully.",
       data: id,
     });
   } catch (error) {
@@ -72,6 +63,66 @@ const AddStrategyController = async (req, res, next) => {
       .json({ error: true, message: "Internal server error." });
   }
 };
+
+const AddStrategyStockController = async (req, res, next) => {
+  try {
+    const { symbol, id, email } = req.body;
+    console.log(symbol, id)
+    if (!id || !symbol) {
+      return res.status(400).json({
+        error: false,
+        message: "symbol and id are required.",
+      });
+    }
+
+    await InsertStock(
+      id, symbol
+    );
+    await AddStocks(email, id, symbol)
+
+    return res.json({
+      error: false,
+      message: "Bucket added successfully.",
+      data: id,
+    });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ error: true, message: "Internal server error." });
+  }
+};
+
+
+
+const DeleteStrategyStockController = async (req, res, next) => {
+  try {
+    const { symbol, id, email } = req.body;
+    console.log(symbol, id, email, "Delete")
+    if (!id || !symbol) {
+      return res.status(400).json({
+        error: false,
+        message: "symbol and id are required.",
+      });
+    }
+
+    await DeleteStock(
+      id, symbol
+    );
+
+    return res.json({
+      error: false,
+      message: "Stock deleted successfully.",
+      data: id,
+    });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ error: true, message: "Internal server error." });
+  }
+};
+
 
 const formatData = (data) => {
   if (data.length === 0) {
@@ -120,9 +171,7 @@ const GetStrategyController = async (req, res, next) => {
   try {
     const { id } = req.query;
     const strategies = await GetStrategy(id);
-    // console.log(strategies);
-    const data = formatData(strategies);
-    return res.json({ error: false, data: data[0] });
+    return res.json({ error: false, data: strategies[0] });
   } catch (error) {
     console.log(error);
     return res
@@ -140,6 +189,28 @@ const DeleteStrategyController = async (req, res, next) => {
         .json({ error: false, message: "ID is required for deletion." });
     }
     await DeleteStrategy(id);
+
+    return res.json({
+      error: false,
+      message: "Strategy deleted successfully.",
+    });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ error: true, message: "Internal server error." });
+  }
+};
+
+const UpdateStrategyController = async (req, res, next) => {
+  try {
+    const { id, description } = req.body;
+    if (!id || !description) {
+      return res
+        .status(400)
+        .json({ error: false, message: "ID and Description is required for deletion." });
+    }
+    await UpdateStrategy(id, description);
 
     return res.json({
       error: false,
@@ -224,7 +295,7 @@ const getStockInfo = async (req, res, next) => {
 
 const getChartDataDetails = async (req, res, next) => {
   try {
-    const { stock, range, id } = req.query;
+    const { stock, range, id, historicalOnly } = req.query;
     if (!stock) {
       return res
         .status(400)
@@ -235,7 +306,7 @@ const getChartDataDetails = async (req, res, next) => {
         .status(400)
         .json({ error: false, message: "Range is not valid." });
     }
-    const result = await getChartData(stock, range, id);
+    const result = await getChartData(stock, range, id, historicalOnly);
     return res.json({
       error: false,
       message: "Data get successfully",
@@ -306,7 +377,6 @@ const jobqueue = async (req, res, next) => {
 
 const getJobQueue = async (req, res, next) => {
   try {
-    console.time("time")
     const { email_id } = req.query;
     if (!email_id) {
       return res
@@ -314,7 +384,6 @@ const getJobQueue = async (req, res, next) => {
         .json({ error: false, message: "Email id  is required for data." });
     }
     const dl_data = await getjobqueue(email_id);
-    console.timeEnd("time")
 
 
     return res.status(200).json({
@@ -418,6 +487,24 @@ const getStrategyStockInfoController = async (req, res, next) => {
       .json({ error: true, message: "Internal server error." });
   }
 };
+const getStrategyStocksController = async (req, res, next) => {
+  try {
+    const { id } = req.query;
+    const result = await getStrategyStocks(id);
+
+    return res.json({
+      error: false,
+      message: "Data get successfully",
+      data: result.data,
+      return: result.return
+    });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ error: true, message: "Internal server error." });
+  }
+};
 
 const GetAllPortfolioStrategiesController = async (req, res, next) => {
   try {
@@ -474,7 +561,7 @@ const AddPortfolioStrategyController = async (req, res, next) => {
     const { strategyName, description, assetClasses } = req.body;
     const email = req.body.email_id;
     const { strategy_id } = req.query;
-    const run = req.body.run;
+    // const run = req.body.run;
     const id = strategy_id ? strategy_id : Math.floor(Date.now() / 10);
 
     if (!strategyName || !description) {
@@ -492,11 +579,9 @@ const AddPortfolioStrategyController = async (req, res, next) => {
         insertPromises.push(
           InsertPortfolioStrategy(email, id, strategyName, description, asset_class_name, stock, percentage)
         );
-
-        if (run) {
-          insertPromises.push(AddStocks(email, id, stock));
-        }
-
+        // if (run) {
+        //   insertPromises.push(AddStocks(email, id, stock));
+        // }
       }
     }
 
@@ -654,5 +739,9 @@ module.exports = {
   InsertPortfolioTradesController,
   UpdatePortfolioTradesController,
   ProcessPortfolioTradesController,
-  BulkUpdatePortfolioTradesController
+  BulkUpdatePortfolioTradesController,
+  getStrategyStocksController,
+  UpdateStrategyController,
+  AddStrategyStockController,
+  DeleteStrategyStockController
 };

@@ -263,20 +263,14 @@ const getStrategyStockInfo = async (id) => {
             }, {});
 
             const finalResult = Object.values(groupedAssets);
-            const dlData = await getAllData(id);
 
-            let totalPredictedPercentage = 0;
             const promises = finalResult.flatMap(assetClass =>
                 assetClass.stocks.map(async (asset, index) => {
                     const stockDetails = await getStockDetails(asset.symbol);
                     const stockTrades = await getStockTrades(id, asset.symbol);
                     const gainInfo = CalculateCapitalGains(asset.symbol, stockTrades, stockDetails.regularMarketPrice);
                     stockDetails.percentage_change = stockDetails.percentage_change == "-" ? stockDetails.regularMarketChangePercent : stockDetails.percentage_change
-                    const dl_stock_data = dlData.dl_data.find(dl => dl.security === asset.symbol);
 
-                    if (dl_stock_data) {
-                        stockDetails.predict_percentage = parseFloat(dl_stock_data.predict_percentage).toFixed(4);
-                    }
                     let current_qty = gainInfo.unrealised[gainInfo.unrealised.length - 1].total_buy_quantity;
                     let current_value = current_qty * stockDetails.regularMarketPrice;
                     let inv_prive = gainInfo.unrealised[gainInfo.unrealised.length - 1].fifo_cost;
@@ -285,7 +279,6 @@ const getStrategyStockInfo = async (id) => {
                     let real_gain = gainInfo.realised[gainInfo.realised.length - 1].gain;
                     let unreal_gain = gainInfo.unrealised[gainInfo.unrealised.length - 1].unrealised_gain;
                     portfolio_value = portfolio_value + current_value;
-                    totalPredictedPercentage = totalPredictedPercentage + (dl_stock_data.predict_percentage * asset.percentage / 100)
                     assetClass.stocks[index] = { ...stockDetails, ...asset, current_qty, current_value, inv_prive, inv_value, total_return, real_gain, unreal_gain };
                 })
             );
@@ -333,7 +326,7 @@ const getStrategyStockInfo = async (id) => {
 
 
 
-            const res = { portfolio_value, data: finalResult, cashData: cashData, totalPredictedPercentage }
+            const res = { portfolio_value, data: finalResult, cashData: cashData }
             resolve(res);
         } catch (error) {
             reject(error);

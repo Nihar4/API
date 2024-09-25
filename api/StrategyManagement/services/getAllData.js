@@ -6,12 +6,12 @@ const getAllData = async (id) => {
             SELECT dj.*
             FROM swiftfoliosuk.dl_jobs dj
             INNER JOIN (
-                SELECT security, MAX(date_completed) AS max_date
+                SELECT security, MAX(date_created) AS max_date
                 FROM swiftfoliosuk.dl_jobs
                 WHERE strategy_id = ?
                 GROUP BY security
             ) AS latest_jobs
-            ON dj.security = latest_jobs.security AND dj.date_completed = latest_jobs.max_date
+            ON dj.security = latest_jobs.security AND dj.date_created = latest_jobs.max_date
             WHERE dj.strategy_id = ?
         `;
         const params = [id, id];

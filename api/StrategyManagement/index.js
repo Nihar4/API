@@ -1,5 +1,5 @@
 const { AddStrategyController_Eureka, GetAllStrategiesController_Eureka, DeleteStrategyController_Eureka, GetStrategyController_Eureka, InsertDlDataEureka, getDlDataForHedgeIndex, update_WeightsController, update_percentageController } = require("./controllers/EurekaStrategyManagement");
-const { AddStrategyController, GetAllStrategiesController, DeleteStrategyController, GetStrategyController, getDlData, postDlData, getStockInfo, getChartDataDetails, ValidateStock, jobqueue, getJobQueue, getlongname, update_WeightsController_asset, GetScatterChartDataController, update_PercentageController_asset, GetPerformanceDataController, UpdatePortfolioController, GetPortfolioController, GetPortfolioChartController, getStrategyStockInfoController, DeletePortfolioStrategyController, GetPortfolioStrategyController, GetAllPortfolioStrategiesController, AddPortfolioStrategyController, GetPortfolioTradesController, GetPortfolioCashController, UpdatePortfolioCashController, DeletePortfolioTradesController, InsertPortfolioTradesController, UpdatePortfolioTradesController, ProcessPortfolioTradesController, BulkUpdatePortfolioTradesController } = require("./controllers/StrategyManagement");
+const { AddStrategyController, GetAllStrategiesController, DeleteStrategyController, GetStrategyController, getDlData, postDlData, getStockInfo, getChartDataDetails, ValidateStock, jobqueue, getJobQueue, getlongname, update_WeightsController_asset, GetScatterChartDataController, update_PercentageController_asset, GetPerformanceDataController, UpdatePortfolioController, GetPortfolioController, GetPortfolioChartController, getStrategyStockInfoController, DeletePortfolioStrategyController, GetPortfolioStrategyController, GetAllPortfolioStrategiesController, AddPortfolioStrategyController, GetPortfolioTradesController, GetPortfolioCashController, UpdatePortfolioCashController, DeletePortfolioTradesController, InsertPortfolioTradesController, UpdatePortfolioTradesController, ProcessPortfolioTradesController, BulkUpdatePortfolioTradesController, getStrategyStocksController, UpdateStrategyController, AddStrategyStockController, DeleteStrategyStockController } = require("./controllers/StrategyManagement");
 
 const StrategyManagement = require("express").Router()
 
@@ -10,13 +10,22 @@ StrategyManagement.get("/getdldta", getDlData)
 StrategyManagement.get("/get", GetAllStrategiesController)
 StrategyManagement.get("/getone", GetStrategyController)
 StrategyManagement.delete("/", DeleteStrategyController)
+StrategyManagement.put("/update", UpdateStrategyController)
+StrategyManagement.get("/stocks", getStrategyStocksController)
+StrategyManagement.post("/stock/insert", AddStrategyStockController)
+StrategyManagement.delete("/stock", DeleteStrategyStockController)
+
+
+
 StrategyManagement.post("/insertdldata", postDlData)
 StrategyManagement.get("/getstockinfo", getStockInfo)
 StrategyManagement.get("/chartdata", getChartDataDetails)
 StrategyManagement.get("/validatestock", ValidateStock)
+
 StrategyManagement.get("/getjobqueue", getJobQueue)
 StrategyManagement.get("/getlongname", getlongname)
 StrategyManagement.post("/jobqueue", jobqueue)
+
 StrategyManagement.post("/updateWeights-asset", update_WeightsController_asset)
 StrategyManagement.post("/updatePercentage-asset", update_PercentageController_asset)
 StrategyManagement.post("/insertdldata-asset", GetScatterChartDataController)
@@ -45,8 +54,6 @@ StrategyManagement.post("/portfolio/process/trades", ProcessPortfolioTradesContr
 
 StrategyManagement.put("/portfolio/trades", UpdatePortfolioTradesController)
 StrategyManagement.put("/portfolio/trades/bulk", BulkUpdatePortfolioTradesController)
-
-
 
 StrategyManagement.get("/portfolio/cash", GetPortfolioCashController)
 StrategyManagement.post("/portfolio/cash", UpdatePortfolioCashController)
