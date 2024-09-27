@@ -247,31 +247,44 @@ const getChartData = async (stock, range, id, historicalOnly) => {
         let dataWithDates = [];
 
         let len = dataChunks[0].length;
-        // console.log(len,dataChunks.length);
+        // console.log(len, dataChunks.length, outputDataArray.length);
         const date = new Date(startDate);
         currentDate = new Date();
+
+        const topDataNo = 11;
         for (let i = 0; i < len; i++) {
           if (date >= startDate && date <= currentDate) {
             const existingIndex = finalHistoricData.findIndex(d => new Date(d.date).toISOString().split('T')[0] == date.toISOString().split('T')[0]);
             if (existingIndex !== -1) {
-              finalHistoricData[existingIndex].close1 = parseFloat(dataChunks[0][i]);
-              finalHistoricData[existingIndex].close2 = parseFloat(dataChunks[1][i]);
-              finalHistoricData[existingIndex].close3 = parseFloat(dataChunks[2][i]);
-              candlesWithoutAdjClose[existingIndex].close4 = parseFloat(dataChunks[3][i]);
-              finalHistoricData[existingIndex].close5 = parseFloat(dataChunks[4][i]);
-              finalHistoricData[existingIndex].close6 = parseFloat(dataChunks[5][i]);
+              // finalHistoricData[existingIndex].close1 = parseFloat(dataChunks[0][i]);
+              // finalHistoricData[existingIndex].close2 = parseFloat(dataChunks[1][i]);
+              // finalHistoricData[existingIndex].close3 = parseFloat(dataChunks[2][i]);
+              // finalHistoricData[existingIndex].close4 = parseFloat(dataChunks[3][i]);
+              // finalHistoricData[existingIndex].close5 = parseFloat(dataChunks[4][i]);
+              // finalHistoricData[existingIndex].close6 = parseFloat(dataChunks[5][i]);
+
+              for (let j = 0; j < topDataNo; j++) {
+                finalHistoricData[existingIndex][`close${j + 1}`] = parseFloat(dataChunks[j][i]);
+              }
+
             }
+
           }
           else {
-            dataWithDates.push({
-              date: date.toISOString(),
-              close1: parseFloat(dataChunks[0][i]),
-              close2: parseFloat(dataChunks[1][i]),
-              close3: parseFloat(dataChunks[2][i]),
-              close4: parseFloat(dataChunks[3][i]),
-              close5: parseFloat(dataChunks[4][i]),
-              close6: parseFloat(dataChunks[5][i]),
-            });
+            // dataWithDates.push({
+            //   date: date.toISOString(),
+            //   close1: parseFloat(dataChunks[0][i]),
+            //   close2: parseFloat(dataChunks[1][i]),
+            //   close3: parseFloat(dataChunks[2][i]),
+            //   close4: parseFloat(dataChunks[3][i]),
+            //   close5: parseFloat(dataChunks[4][i]),
+            //   close6: parseFloat(dataChunks[5][i]),
+            // });
+            let newData = { date: date.toISOString() };
+            for (let j = 0; j < topDataNo; j++) {
+              newData[`close${j + 1}`] = parseFloat(dataChunks[j][i]);
+            }
+            dataWithDates.push(newData);
           }
           date.setDate(date.getDate() + 1);
         }
