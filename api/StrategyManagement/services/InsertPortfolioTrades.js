@@ -7,7 +7,7 @@ const GetTradeIRN = async () => {
     const query = `
       SELECT 
         t.internal_ref_number
-      FROM swiftfoliosuk.trades t
+      FROM trades t
     `;
     try {
         const data = await ExecuteQuery(query);
@@ -82,7 +82,7 @@ const validateTradeData = async (data) => {
 const InsertPortfolioTrades = async (strategy_id, email, data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            let query = `INSERT INTO swiftfoliosuk.trades (email, strategy_id, internal_ref_number, symbol, quantity, tentativeprice, netprice, amount, type, date) VALUES `;
+            let query = `INSERT INTO trades (email, strategy_id, internal_ref_number, symbol, quantity, tentativeprice, netprice, amount, type, date) VALUES `;
 
             const valuesArray = [];
 

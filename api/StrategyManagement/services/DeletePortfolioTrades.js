@@ -5,7 +5,7 @@ const DeletePortfolioTrades = async (strategy_id, internal_ref_numbers) => {
         const placeholders = internal_ref_numbers.map(() => '?').join(',');
 
         const query = `
-      DELETE FROM swiftfoliosuk.trades
+      DELETE FROM trades
       WHERE strategy_id = ?
       AND internal_ref_number IN (${placeholders})
     `;

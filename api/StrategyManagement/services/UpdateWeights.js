@@ -4,7 +4,7 @@ const updateWeights = async (id, data) => {
   return new Promise(async (resolve, reject) => {
     try {
       for (const [stock, weight] of Object.entries(data)) {
-        const query = `UPDATE swiftfoliosuk.strategy_Eureka
+        const query = `UPDATE strategy_Eureka
                     SET 
                         min_weight = ${weight[0]},
                         max_weight = ${weight[1]}
@@ -12,7 +12,7 @@ const updateWeights = async (id, data) => {
                         id = '${id}' AND stock = '${stock.trim()}' `;
 
         // console.log(query);
-        await  ExecuteQuery(query);
+        await ExecuteQuery(query);
       }
       resolve();
     } catch (error) {

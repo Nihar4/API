@@ -163,7 +163,7 @@ const insertDlData = async (stock, id) => {
 
       const today = new Date().toISOString().slice(0, 10);
 
-      const query = `UPDATE swiftfoliosuk.dl_jobs SET \`output_data\` = '${combinedString}', \`correlation\` = '${avg_corr}', \`predict_percentage\` = ${avg_percentage}, \`date_completed\` = '${today}', \`status\` = 'Complete' WHERE \`security\` = '${stockName}' AND \`strategy_id\` = ${id}`;
+      const query = `UPDATE dl_jobs SET \`output_data\` = '${combinedString}', \`correlation\` = '${avg_corr}', \`predict_percentage\` = ${avg_percentage}, \`date_completed\` = '${today}', \`status\` = 'Complete' WHERE \`security\` = '${stockName}' AND \`strategy_id\` = ${id}`;
       await ExecuteQuery(query);
       console.log("executed successfully");
       resolve();

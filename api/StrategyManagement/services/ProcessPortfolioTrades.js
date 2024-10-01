@@ -4,7 +4,7 @@ const { fetchQuoteData } = require("../../../utils/YahooFinanceApi");
 const ProcessPortfolioTrades = async (strategy_id, email, data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            let query = `INSERT INTO swiftfoliosuk.trades 
+            let query = `INSERT INTO trades 
                 (email, strategy_id, internal_ref_number, symbol, quantity, tentativeprice, netprice, amount, type, date) 
                 VALUES `;
 

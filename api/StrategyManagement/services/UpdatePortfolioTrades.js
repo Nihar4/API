@@ -5,7 +5,7 @@ const UpdatePortfolioTrades = async (strategy_id, data) => {
         try {
             const tradeDate = new Date().toISOString();
             const updateQuery = `
-                        UPDATE swiftfoliosuk.trades 
+                        UPDATE trades 
                         SET 
                             quantity = ${data.quantity}, 
                             netprice = '${data.netprice}', 

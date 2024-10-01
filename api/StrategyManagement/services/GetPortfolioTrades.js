@@ -15,8 +15,8 @@ const GetPortfolioTrades = async (strategy_id) => {
         t.type,
         t.date,
         COALESCE(p.asset_class_name, 'Other') AS category
-      FROM swiftfoliosuk.trades t
-      LEFT JOIN swiftfoliosuk.portfolio_management p 
+      FROM trades t
+      LEFT JOIN portfolio_management p 
         ON t.email = p.email AND t.symbol = p.stock AND p.id = '${strategy_id}'
       WHERE t.strategy_id = '${strategy_id}'
       ORDER BY t.date DESC

@@ -15,10 +15,10 @@ const checkAndAddCodeColumn = async (stock) => {
       console.log(`Column ${stock} already exists`);
     }
 
-    const q = `INSERT INTO swiftfoliosuk.security_price (Date)
+    const q = `INSERT INTO security_price (Date)
     SELECT date_range
     FROM (
-        SELECT DATE_ADD((SELECT DATE_ADD((SELECT MAX(Date) FROM swiftfoliosuk.security_price), INTERVAL 1 DAY)), INTERVAL (t4*1000 + t3*100 + t2*10 + t1) DAY) AS date_range
+        SELECT DATE_ADD((SELECT DATE_ADD((SELECT MAX(Date) FROM security_price), INTERVAL 1 DAY)), INTERVAL (t4*1000 + t3*100 + t2*10 + t1) DAY) AS date_range
         FROM 
             (SELECT 0 t1 UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION 
              SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) t1,
@@ -28,7 +28,7 @@ const checkAndAddCodeColumn = async (stock) => {
              SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) t3,
             (SELECT 0 t4 UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION 
              SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) t4
-        WHERE DATE_ADD((SELECT DATE_ADD((SELECT MAX(Date) FROM swiftfoliosuk.security_price), INTERVAL 1 DAY)), INTERVAL (t4*1000 + t3*100 + t2*10 + t1) DAY) <= NOW()
+        WHERE DATE_ADD((SELECT DATE_ADD((SELECT MAX(Date) FROM security_price), INTERVAL 1 DAY)), INTERVAL (t4*1000 + t3*100 + t2*10 + t1) DAY) <= NOW()
     ) AS DateRange`;
 
     await ExecuteQuery(q);

@@ -210,7 +210,7 @@ const getStockTrades = async (id, symbol) => {
 const getCashTrades = async (id) => {
     const query = `
         SELECT balance
-FROM swiftfoliosuk.cash
+FROM cash
 WHERE strategy_id = ?
 ORDER BY datetime DESC
 LIMIT 1;

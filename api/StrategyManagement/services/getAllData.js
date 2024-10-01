@@ -4,10 +4,10 @@ const getAllData = async (id) => {
     return new Promise(async (resolve, reject) => {
         const query = `
             SELECT dj.*
-            FROM swiftfoliosuk.dl_jobs dj
+            FROM dl_jobs dj
             INNER JOIN (
                 SELECT security, MAX(date_created) AS max_date
-                FROM swiftfoliosuk.dl_jobs
+                FROM dl_jobs
                 WHERE strategy_id = ?
                 GROUP BY security
             ) AS latest_jobs

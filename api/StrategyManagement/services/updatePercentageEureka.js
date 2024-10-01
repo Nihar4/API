@@ -7,7 +7,7 @@ const updatePercentageEureka = async (id, data) => {
         const stock = Object.keys(obj)[0];
         const value = (parseFloat(obj[stock]) * 100).toFixed(2);
 
-        const query = `UPDATE swiftfoliosuk.strategy_Eureka
+        const query = `UPDATE strategy_Eureka
         SET 
         percentage = ${(value)}
         WHERE 

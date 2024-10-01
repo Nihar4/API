@@ -5,7 +5,7 @@ const AddStocks = async (email, strategy_id, stock_code) => {
 
     const today = new Date().toISOString();
     const query =
-      "INSERT INTO swiftfoliosuk.dl_jobs (email,strategy_id, security, date_created, output_data, correlation,date_completed, status) VALUES (?,?, ?, ?,NULL, NULL, NULL, 'Pending')";
+      "INSERT INTO dl_jobs (email,strategy_id, security, date_created, output_data, correlation,date_completed, status) VALUES (?,?, ?, ?,NULL, NULL, NULL, 'Pending')";
     const params = [email, strategy_id, stock_code, today];
 
     try {

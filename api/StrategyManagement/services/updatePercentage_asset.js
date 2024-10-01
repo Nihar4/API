@@ -10,13 +10,13 @@ const updatePercentage_asset = async (id, data) => {
         const value = (parseFloat(obj[stockObj]) * 100).toFixed(2);
         // console.log(stock,AssetClass,value);
 
-        const query = `UPDATE swiftfoliosuk.strategy
+        const query = `UPDATE strategy
         SET 
         percentage = ${(value)}
         WHERE 
         id = '${id}' AND stock = '${stock.trim()}' AND asset_class_name='${AssetClass}'`;
 
-            // console.log(query);
+        // console.log(query);
         await ExecuteQuery(query);
       }
       resolve();

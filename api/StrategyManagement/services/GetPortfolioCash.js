@@ -5,7 +5,7 @@ const GetPortfolioCash = async (strategy_id) => {
         const query = `
       SELECT 
         *
-      FROM swiftfoliosuk.cash 
+      FROM cash 
       WHERE strategy_id = '${strategy_id}'
     `;
 

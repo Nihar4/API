@@ -8,7 +8,7 @@ const updatePortfolioCash = async (id, cash, email) => {
         const datetime = new Date().toISOString().slice(0, 19)
 
         const query = `
-            INSERT INTO swiftfoliosuk.cash (email, strategy_id, description, amount, balance, datetime)
+            INSERT INTO cash (email, strategy_id, description, amount, balance, datetime)
             VALUES (?, ?, ?, ?, ?, ?);
         `;
         const params = [email, id, description, amount, balance, datetime];

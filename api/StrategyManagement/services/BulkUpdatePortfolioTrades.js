@@ -9,7 +9,7 @@ const GetTradeIRN = async (strategy_id) => {
     const query = `
       SELECT 
         t.internal_ref_number
-      FROM swiftfoliosuk.trades t where strategy_id = ?
+      FROM trades t where strategy_id = ?
     `;
     try {
         const data = await ExecuteQuery(query, strategy_id);
@@ -94,7 +94,7 @@ const BulkUpdatePortfolioTrades = async (strategy_id, email, data) => {
                     : `'${new Date().toISOString()}'`;
 
                 const updateQuery = `
-                    UPDATE swiftfoliosuk.trades 
+                    UPDATE trades 
                     SET 
                         quantity = ${quantity}, 
                         tentativeprice = '${tentativeprice}', 
