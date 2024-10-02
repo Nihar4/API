@@ -25,6 +25,8 @@ const s3_client = new S3Client({
 
 async function UploadToAwsBucket(fileName) {
   try {
+    console.log("In UploadAWS Function")
+    console.log(fileName);
     console.log(path.join(__dirname, '..', 'Uploads', fileName))
     const fileContent = fs.readFileSync(path.join(__dirname, '..', 'Uploads', fileName));
 

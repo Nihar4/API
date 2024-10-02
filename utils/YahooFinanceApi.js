@@ -106,15 +106,6 @@ function fetchHistoricalData(symbol, queryOptions) {
         if (cachedData) return resolve(cachedData);
 
         try {
-            const historicalData = await yahooFinance.historical(symbol, queryOptions);
-            if (!historicalData) {
-                const Data = await fetchChartData(symbol, queryOptions);
-                cacheData(cacheKey, Data);
-                return resolve(Data);
-            }
-            cacheData(cacheKey, historicalData);
-            resolve(historicalData);
-        } catch (error) {
             const Data = await fetchChartData(symbol, queryOptions);
             if (Data) {
                 cacheData(cacheKey, Data);
@@ -123,6 +114,8 @@ function fetchHistoricalData(symbol, queryOptions) {
             else {
                 reject({ error: true, msg: "API Down" });
             }
+        } catch (error) {
+            reject({ error: true, msg: "API Down" });
         }
     });
 }

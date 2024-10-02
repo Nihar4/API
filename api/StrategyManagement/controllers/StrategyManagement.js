@@ -30,6 +30,7 @@ const { getStrategyStocks } = require("../services/getStrategyStocks");
 const { UpdateStrategy } = require("../services/UpdateStrategy");
 const { InsertStock } = require("../services/InsertStock");
 const { DeleteStock } = require("../services/DeleteStock");
+const UploadToAwsBucket = require("../../../utils/UploadToAwsBucket");
 
 const AddStrategyController = async (req, res, next) => {
   try {
@@ -711,6 +712,28 @@ const BulkUpdatePortfolioTradesController = async (req, res, next) => {
   }
 };
 
+const UploadTestController = async (req, res) => {
+  try {
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ message: "No files uploaded" });
+    }
+
+    console.log(req.files.length, req.files)
+    const uploadedFile = req.files[0];
+    const fileName = uploadedFile.filename;
+    console.log("Uploaded file name:", fileName);
+
+    const file_url = await UploadToAwsBucket(fileName);
+    console.log("Upload S3 URL ", file_url);
+
+    res.status(200).json({ file_url });
+  } catch (error) {
+    console.error("Error uploading file:", error);
+    res.status(500).json({ message: "File upload failed", error });
+  }
+};
+
+
 module.exports = {
   AddStrategyController,
   GetAllStrategiesController,
@@ -743,5 +766,6 @@ module.exports = {
   getStrategyStocksController,
   UpdateStrategyController,
   AddStrategyStockController,
-  DeleteStrategyStockController
+  DeleteStrategyStockController,
+  UploadTestController
 };
