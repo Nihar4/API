@@ -14,7 +14,12 @@ const AWS_SECRET_KEY = process.env.AWS_SECRET_KEY;
 const AWS_BUCKET_NAME = process.env.AWS_BUCKET_NAME;
 const AWS_BUCKET_FILE_PATH = process.env.AWS_BUCKET_FILE_PATH;
 
-console.log(AWS_ACCESS_KEY)
+if (!AWS_ACCESS_KEY || !AWS_SECRET_KEY || !AWS_BUCKET_NAME || !AWS_BUCKET_FILE_PATH) {
+  console.log("Invalid credentials: One or more AWS environment variables are missing or empty.");
+} else {
+  console.log("AWS credentials are valid.");
+}
+
 const s3_client = new S3Client({
   credentials: {
     accessKeyId: AWS_ACCESS_KEY,
@@ -25,9 +30,6 @@ const s3_client = new S3Client({
 
 async function UploadToAwsBucket(fileName) {
   try {
-    console.log("In UploadAWS Function")
-    console.log(fileName);
-    console.log(path.join(__dirname, '..', 'Uploads', fileName))
     const fileContent = fs.readFileSync(path.join(__dirname, '..', 'Uploads', fileName));
 
     const mimeTypes = {

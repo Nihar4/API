@@ -1,9 +1,9 @@
 const { ExecuteQuery } = require("../../../utils/ExecuteQuery");
 
-const UpdateStrategy = async (id, description) => {
+const UpdateStrategy = async (id, description, name) => {
     return new Promise(async (resolve, reject) => {
-        const query = 'UPDATE buckets SET description = ? WHERE id = ?';
-        const params = [description, id];
+        const query = 'UPDATE buckets SET description = ? , name = ? WHERE id = ?';
+        const params = [description, name, id];
         try {
             const data = await ExecuteQuery(query, params);
             resolve(data);

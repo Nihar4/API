@@ -31,6 +31,7 @@ const { UpdateStrategy } = require("../services/UpdateStrategy");
 const { InsertStock } = require("../services/InsertStock");
 const { DeleteStock } = require("../services/DeleteStock");
 const UploadToAwsBucket = require("../../../utils/UploadToAwsBucket");
+const { GetStrategyNames } = require("../services/GetStrategyNames");
 
 const AddStrategyController = async (req, res, next) => {
   try {
@@ -205,17 +206,41 @@ const DeleteStrategyController = async (req, res, next) => {
 
 const UpdateStrategyController = async (req, res, next) => {
   try {
-    const { id, description } = req.body;
-    if (!id || !description) {
+    const { id, description, name } = req.body;
+
+    if (!id || !description || !name) {
       return res
         .status(400)
         .json({ error: false, message: "ID and Description is required for deletion." });
     }
-    await UpdateStrategy(id, description);
+    await UpdateStrategy(id, description, name);
 
     return res.json({
       error: false,
       message: "Strategy deleted successfully.",
+    });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ error: true, message: "Internal server error." });
+  }
+};
+
+const GetStrategyNamesController = async (req, res, next) => {
+  try {
+    const { id, email } = req.query;
+    if (!id) {
+      return res
+        .status(400)
+        .json({ error: false, message: "ID is required for get Data." });
+    }
+    const data = await GetStrategyNames(id, email);
+
+    return res.json({
+      error: false,
+      message: "Strategy names get successfully.",
+      data: data
     });
   } catch (error) {
     console.log(error);
@@ -767,5 +792,6 @@ module.exports = {
   UpdateStrategyController,
   AddStrategyStockController,
   DeleteStrategyStockController,
-  UploadTestController
+  UploadTestController,
+  GetStrategyNamesController
 };
