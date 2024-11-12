@@ -5,7 +5,7 @@ const BackOffice = require("express").Router()
 const fs = require("fs");
 const path = require("path");
 const UploadToAwsBucket = require("../../utils/UploadToAwsBucket");
-const { GetAllFundsController, AddFundController, EditFundController } = require("./controllers/BackOfficeController");
+const { GetAllFundsController, AddFundController, EditFundController, FundUpdateController ,GetFundUpdatesController,GetFundSheetController,FundSheetController} = require("./controllers/BackOfficeController");
 
 const GenerateID = (length) => {
     return Math.floor(Math.random() * Math.pow(10, length)).toString().padStart(length, '0');
@@ -40,6 +40,15 @@ const multiple_upload = multer({ storage }).any();
 BackOffice.get("/funds/details", GetAllFundsController)
 BackOffice.post("/funds/add", AddFundController)
 BackOffice.post("/funds/edit", multiple_upload, EditFundController)
+
+BackOffice.post("/funds/:fundId/updates", multiple_upload ,FundUpdateController)
+BackOffice.get("/funds/:fundId/updates/get",GetFundUpdatesController)
+
+BackOffice.post("/funds/:fundId/factsheets",multiple_upload,FundSheetController)
+BackOffice.get("/funds/:fundId/factsheets/get",GetFundSheetController)
+
+
+
 
 
 
